@@ -8,32 +8,49 @@ touch #command to make a file
 mv filename Directoryname/ . #to either move a file or rename
 cp #copy file
 cp -R #if you wanna copy directory
-
-rm -i #remove all **BE CAREFUL**
+```
+**BE CAREFUL about removing
+```
+rm -i #remove all 
 rm -ir #R is to keep going within the directory
 
-nanoAccessing txt file — either use less or nano or cat
+#Accessing txt file
 
-Echo will help you add text to text file echo “add text” - file name. Use double dash to APPEND rather than OVERWRITE
+nano
+cat 
+less 
+
+echo 
+#will help you add text to text file 
+echo “add text” > filename. 
+
+#use double dash to APPEND rather than OVERWRITE
+```
 
 COUNTING CHARACTERS 
+
+```
 Wc 
-Wc -l will show you size of the file in bytes
+Wc -l #will show you size of the file in bytes
+```
 
 Matching Lines/Finding In Files With Grep
-	•	show lines that match a specified pattern
-	•	ignore case when matching (-i)
-	•	only match whole words (-w) if NOT it will do pattern recognition
-	•	show lines that don’t match a pattern (-v)
-	•	Use wildcard characters and other patterns to allow for alternatives (*, ., and [])
+
+ignore case when matching (-i)
+only match whole words (-w) if NOT it will do pattern recognition
+show lines that don’t match a pattern (-v)
+Use wildcard characters and other patterns to allow for alternatives (*, ., and [])
+
 Other Useful Commands
-scp for transferring files over SSH
-wget for downloading files from URL
-watch for monitoring
-xargs for complex inputs
-ps for process status
-top for running processes
-kill for stopping processes
+
+```scp``` for transferring files over SSH
+```wget``` for downloading files from URL
+```watch``` for monitoring
+```xargs``` for complex inputs
+```ps``` for process status
+```top``` for running processes
+```kill``` for stopping processes
+
 Cut out the 3rd column of a tab-delimited text file and sort it to only show unique lines (i.e. remove duplicates):
  cut -f 3 file.txt | sort -u
 
