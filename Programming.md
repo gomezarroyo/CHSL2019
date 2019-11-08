@@ -9,7 +9,7 @@ mv filename Directoryname/ . #to either move a file or rename
 cp #copy file
 cp -R #if you wanna copy directory
 
-rm -i #remove all **BE CAREFUL
+rm -i #remove all **BE CAREFUL**
 rm -ir #R is to keep going within the directory
 
 nanoAccessing txt file — either use less or nano or cat
