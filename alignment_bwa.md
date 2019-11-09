@@ -12,7 +12,7 @@ mkdir fqfiles#downlaod your FASTQ files here
 
 ## Index your ref sequence 
 Use BWA aligner tool
-**You need to make BWA accessible to your $PATH
+**You need to make BWA accessible to your $PATH**
 
 ```
 cd ref
@@ -45,7 +45,7 @@ bwa mem -t 8 -o /workspace/results_folder/$$$SAMPLE_NAME.sam
 ```
 
 ## Convert SAM to BAM. 
-***You will need to install samtools
+**You will need to install samtools**
 
 ```
 cd /workspace/results_folder
@@ -57,19 +57,19 @@ samtools view -@ 8 -h -b -o $$$SAMPLE_NAME.bam $$$SAMPLE_NAME.sam
 ```
 ## "Name sort" sample BAM files. 
 this is needed for duplicate selection. 
-**you need to name sort to better identify duplicate sequences
+**you need to name sort to better identify duplicate sequences**not 
 
 ```
 java -Xmx60g -jar /home/ubuntu/bin/picard.jar SortSam I=$$$SAMPLE_NAME.bam O=$$$SAMPLE_NAME_namesorted_picard.bam SO=queryname
 
 #notice that you add _namesorted_picard to the name of file. this is not necessary but it is useful to identify your files later on
 ```
-**NOTE: The command above java -Xmx60g -jar /home/ubuntu/bin/picard.jar means:
+**NOTE:** The command above java -Xmx60g -jar /home/ubuntu/bin/picard.jar means:
 java #call java
 -Xmx60g #asign memory to the program
 -jar /home/ubuntu/bin/picard.jar #find the directory were PICARD tools are
 
-## Sort out **duplicated sequences** from the previously name_sorted BAM file
+## Mark **duplicated sequences** from the previously name_sorted BAM file
 we will use the MarkDuplicates picard tool
 
 ```
@@ -103,7 +103,7 @@ java -Xmx60g -jar /home/ubuntu/bin/picard.jar BuildBamIndex I=$$$SAMPLE_NAME_pos
 
 ## Assess quality of your alignment. 
 This fast summary will use flagstat. you will use the last file you created (position sorted, duplicates marked up INDEXED sample BAM file)
-***You need to install samtools
+**You need to install samtools**
 
 ```
 samtools flagstat $$$SAMPLE_NAME_pos_sorted_picard_MRKDUP.bam > $$$SAMPLE_NAME_pos_sorted_picard_MRKDUP_flagstat.flagstat
@@ -123,11 +123,11 @@ head -n 20 *.flagstat
 ## FINAL WORKING MATERIAL
 ### Clean up the un-needed BAM/SAM files 
 
-***At the end YOU ONLY NEED: 
+**At the end YOU ONLY NEED:** 
 
 1) mrk_dup_metrics.txt
-2) $$$SAMPLE_NAME_pos_sorted_picard_MRKDUP.bai position sorted ***which is your positioned sorted, marked duplicates index BAM file
-3) $$$SAMPLE_NAME_pos_sorted_picard_MRKDUP.bam ***which is your positioned sorted, marked duplicates NOT-index BAM file
-$) $$$SAMPLE_NAME_pos_sorted_picard_MRKDUP_flagstat.flagstat ***which is the FLAG-based quality stats file for your aligntment. 
+2) $$$SAMPLE_NAME_pos_sorted_picard_MRKDUP.bai position sorted **which is your positioned sorted, marked duplicates index BAM file**
+3) $$$SAMPLE_NAME_pos_sorted_picard_MRKDUP.bam **which is your positioned sorted, marked duplicates NOT-index BAM file**
+$) $$$SAMPLE_NAME_pos_sorted_picard_MRKDUP_flagstat.flagstat **which is the FLAG-based quality stats file for your aligntment.** 
 
 #GRACIAS! GOOD luck! 
