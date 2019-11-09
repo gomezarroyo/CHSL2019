@@ -29,17 +29,20 @@ export PICARD=/home/ubuntu/bin/picard.jar
 ```
 
 ## Alignment of your sample FASTQ files. 
-OUTPUT will be a sample SAM file (don't worry you will transform to BAM later)
+The OUTPUT of this command will be a SAM file (don't worry you will transform to BAM later)
 
 ```
+#you need to be in the results folder
+
 cd /workspace/results_folder
 
-bwa mem -t 8 -o /workspace/results_folder/$$$SAMPLE_NAME.sam 
-/$$$path/$$$REFERENCE_FOLDER/REFSEQFILE.fa 
-/$$$path/$$$FASTQFILE_FOLDER FASTQ_R1.fastq.gz 
-/$$$path/$$$FASTQFILE_FOLDER FASTQ_R2.fastq.gz
+#REMEMBER everything goes into one line. it is only split to easy copy/paste
 
-#everything goes into one line
+bwa mem -t 8 -o /workspace/results_folder/$$$SAMPLE_NAME.sam 
+/$$$path/REFERENCE_FOLDER/REFSEQFILE.fa 
+/$$$path/FASTQFILE_FOLDER sampleFASTQ_R1.fastq.gz 
+/$$$path/FASTQFILE_FOLDER sampleFASTQ_R2.fastq.gz
+
 # -t 8 is the number of threads
 
 ```
@@ -62,7 +65,8 @@ this is needed for duplicate selection.
 ```
 java -Xmx60g -jar /home/ubuntu/bin/picard.jar SortSam I=$$$SAMPLE_NAME.bam O=$$$SAMPLE_NAME_namesorted_picard.bam SO=queryname
 
-#notice that you add _namesorted_picard to the name of file. this is not necessary but it is useful to identify your files later on
+#notice that you add _namesorted_picard to the name of file. this is not necessary but it is useful to identify your files later on. similarly you can opt to remove the picard part! 
+
 ```
 **NOTE:** The command above java -Xmx60g -jar /home/ubuntu/bin/picard.jar means:
 java #call java
@@ -70,7 +74,7 @@ java #call java
 -jar /home/ubuntu/bin/picard.jar #find the directory were PICARD tools are
 
 ## Mark **duplicated sequences** from the previously name_sorted BAM file
-we will use the MarkDuplicates picard tool
+we will use the MarkDuplicates tool
 
 ```
 
@@ -86,7 +90,7 @@ You can print data to check on duplication metrics
 head -n 20 $$$SAMPLE_NAME_MRKDUP_metrics.txt
 ```
 ## "Position" sort the sample BAM file. 
-This will be needed for indexing of our sample BAM files. You will sort by position the previously sorted by name BAM files
+This will be needed for indexing of our sample BAM files. You will 'sort by position' the previously 'sorted by name' BAM files
 
 ```
 java -Xmx60g -jar /home/ubuntu/bin/picard.jar SortSam I=$$$SAMPLE_NAME_namesorted_picard_MRKDUP.bam O=$$$SAMPLE_NAME_pos_sorted_picard_MRKDUP.bam SO=coordinate
