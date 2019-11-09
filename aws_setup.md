@@ -14,8 +14,10 @@ Once your create a PEM file you cannot download again.
 Download your keyfile (PEM)
 
 ```
-chmod 400 cshl_2019_student.pem
-ssh -i cshl_2019_student.pem ubuntu@IPaddress_yourinstance
+chmod 400 $$$NAME_OF_AWS_KEY.pem
+#this gives permission to your PEM file
+
+ssh -i $$$NAME_OF_AWS_KEY.pem ubuntu@$$$IP_address_yourinstance
 #ssh is the command to start a shell
 #if your connected then your prompt will change color. 
 
