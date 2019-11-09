@@ -100,12 +100,21 @@ These can change between experiments. **ALL THESE NEED TO BE CREATED STILL**
 
 ```
 export RNA_HOME=~/workspace/rnaseq
+
 export RNA_DATA_DIR=$RNA_HOME/data
+
+#variable RNA_DATA_DIR means it will go to RNA_HOME/data folder even if it does not exist. you can later use it to make it with mkdir -p $RNA_DATA_DIR 
+
 export RNA_DATA_TRIM_DIR=$RNA_DATA_DIR/trimmed
+
 export RNA_REFS_DIR=$RNA_HOME/refs
+
 export RNA_REF_INDEX=$RNA_REFS_DIR/chr22_with_ERCC92
+
 export RNA_REF_FASTA=$RNA_REF_INDEX.fa
+
 export RNA_REF_GTF=$RNA_REF_INDEX.gtf
+
 export RNA_ALIGN_DIR=$RNA_HOME/alignments/hisat2
 
 export _JAVA_OPTIONS=-Djavax.accessibility.assistive_technologies=
@@ -191,6 +200,61 @@ docker run -t biocontainers/samtools:v1.9-4-deb_cv1 samtools --help
 ```
 
 # Introduction to INPUTS
+
+Always check the quality values read i.e sanger format vs old solexa or old illumina <1.8  version
+
+1) Obtain a reference genome
+example using GRCh38 version of the genome from Ensembl. limited to chr22
+
+2) Obtain the annotations file. Access a specific gene
+```
+grep ENST00000342247 $RNA_REF_GTF | less -p "exon\s" -S
+```
+3) Index your refence genome. This is usually part of the aligner sofware
+
+You can extract features from the GTF file to be used to index the FASTA file. In this example we use python scripts
+
+```
+hisat2_extract_splice_sites.py $RNA_REF_GTF > $RNA_REFS_DIR/splicesites.tsv
+hisat2_extract_exons.py $RNA_REF_GTF > $RNA_REFS_DIR/exons.tsv
+```
+
+Then you can go ahead an INDEX your reference genome
+
+```
+hisat2-build -p 8 --ss $RNA_REFS_DIR/splicesites.tsv --exon $RNA_REFS_DIR/exons.tsv $RNA_REF_FASTA $RNA_REF_INDEX
+```
+
+4) Download your datasets
+
+```
+echo $RNA_DATA_DIR
+mkdir -p $RNA_DATA_DIR
+cd $RNA_DATA_DIR
+wget http://genomedata.org/rnaseq-tutorial/HBR_UHR_ERCC_ds_5pc.tar
+
+#untar it
+tar -xvf HBR_UHR_ERCC_ds_5pc.tar
+
+then access it, you will need to use zcat command
+
+zcat UHR_Rep1_ERCC-Mix1_Build37-ErccTranscripts-chr22.read1.fastq.gz | head -n 8
+
+to count it
+zcat UHR_Rep1_ERCC-Mix1_Build37-ErccTranscripts-chr22.read1.fastq.gz | grep -P "^\@HWI" | wc -l
+
+
+ 
+
+
+
+
+
+```
+
+
+
+
 
 ```
 
