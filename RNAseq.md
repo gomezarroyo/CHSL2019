@@ -5,6 +5,7 @@ Things to study:
 2) Python for iteration
 3) Data design (see link in slides)
 4) Download ATOM
+5) Download or look for bpipe software for paralallelyzing
 
 Notes:
 1) Always remove duplicates for DNA seq data. You do not need to remove/mark duplicates in RNAseq data. 
@@ -180,16 +181,16 @@ export LD_LIBRARY_PATH=$RNA_HOME/student_tools/flexbar-3.4.0-linux:$LD_LIBRARY_P
 
 ```
 
+# DOCKER TOOLS: NEED TO REVIEW HOW TO INSTALL
 
+Running docker tool example
 
+```
+docker pull biocontainers/samtools:v1.9-4-deb_cv1
+docker run -t biocontainers/samtools:v1.9-4-deb_cv1 samtools --help
+```
 
-
-
-
-
-
-
-
+# Introduction to INPUTS
 
 ```
 
