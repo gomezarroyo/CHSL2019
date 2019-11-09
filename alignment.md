@@ -144,9 +144,9 @@ java #find java
 
 java -Xmx60g -jar /home/ubuntu/bin/picard.jar #this start java picard
 
-MarkDuplicates I=HCC1395_Exome_chr21_namesorted_picard.bam  O=HCC1395_Exome_chr21_namesorted_picard_mrkdup.bam 
+MarkDuplicates I=NAME_namesorted_picard.bam  O=NAME_namesorted_picard_mrkdup.bam 
 ASSUME_SORT_ORDER=queryname 
-METRICS_FILE=HCC1395_Exome_chr21_mrk_dup_metrics.txt 
+METRICS_FILE= NAME_mrk_dup_metrics.txt 
 QUIET=true 
 COMPRESSION_LEVEL=0 
 VALIDATION_STRINGENCY=LENIENT
