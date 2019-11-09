@@ -1,4 +1,4 @@
-# SEQUENCE ALIGNMENT
+# gDNA SEQUENCE ALIGNMENT
 
 ## First steps
 
