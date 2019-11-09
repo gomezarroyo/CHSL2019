@@ -1,12 +1,23 @@
 # SEQUENCE ALIGNMENT
 
-Download/Upload your FASTQ files and reference sequence
+## First steps
 
-Index your ref sequence. We will use BWA
-You need to make BWA accessible to your $PATH
+First you need to download your FASTQ files and reference sequence to the appropriate directories
 
 ```
-bwa index refsequence.fa
+mkdir ref #download your reference file here
+mkdir fqfiles#downlaod your FASTQ files here
+
+```
+
+## Index your ref sequence 
+Use BWA aligner tool
+**You need to make BWA accessible to your $PATH
+
+```
+cd ref
+bwa index $$$REFSEQFILE.fa
+
 #we are using bwa aligner tool
 
 ```
@@ -17,84 +28,106 @@ bwa index refsequence.fa
 export PICARD=/home/ubuntu/bin/picard.jar
 ```
 
-## Alignment
+## Alignment of your sample FASTQ files. 
+OUTPUT will be a sample SAM file (don't worry you will transform to BAM later)
 
 ```
-cd /workspace/dna_alignment_lab/alignment_results
+cd /workspace/results_folder
 
-bwa mem -t 8 -o /workspace/dna_alignment_lab/alignment_results/NAME_of_yourSAMFILE.sam /workspace/dna_alignment_lab/reference_sequences/refseq.fa /workspace/dna_alignment_lab/fastq_files/
-fastafiles_R1.fastq.gz /workspace/dna_alignment_lab/fastq_files/astafiles_R1.fastq.gz
+bwa mem -t 8 -o /workspace/results_folder/$$$SAMPLE_NAME.sam 
+/$$$path/$$$REFERENCE_FOLDER/REFSEQFILE.fa 
+/$$$path/$$$FASTQFILE_FOLDER FASTQ_R1.fastq.gz 
+/$$$path/$$$FASTQFILE_FOLDER FASTQ_R2.fastq.gz
 
+#everything goes into one line
 # -t 8 is the number of threads
-```
-## convert SAM to BAM. you will need to install samtools
 
 ```
-samtools view -@ 8 -h -b -o HCC1395_Exome_chr21.bam HCC1395_Exome_chr21.sam
+
+## Convert SAM to BAM. 
+***You will need to install samtools
+
 ```
-## Query name sort bam files. this is needed for duplicate making. 
+cd /workspace/results_folder
+
+samtools view -@ 8 -h -b -o $$$SAMPLE_NAME.bam $$$SAMPLE_NAME.sam
+
+#note that you select your BAM file first then SAM file
+
+```
+## "Name sort" sample BAM files. 
+this is needed for duplicate selection. 
 **you need to name sort to better identify duplicate sequences
 
 ```
-java -Xmx60g -jar /home/ubuntu/bin/picard.jar SortSam I=HCC1395_Exome_chr21.bam O=HCC1395_Exome_chr21_namesorted_picard.bam SO=queryname
+java -Xmx60g -jar /home/ubuntu/bin/picard.jar SortSam I=$$$SAMPLE_NAME.bam O=$$$SAMPLE_NAME_namesorted_picard.bam SO=queryname
 
-java #find java
--Xmx60g #asign memory
--jar /home/ubuntu/bin/picard.jar #find the directory
-
+#notice that you add _namesorted_picard to the name of file. this is not necessary but it is useful to identify your files later on
 ```
-## Sort out the **duplicated sequences** from the previously processed file
+**NOTE: The command above java -Xmx60g -jar /home/ubuntu/bin/picard.jar means:
+java #call java
+-Xmx60g #asign memory to the program
+-jar /home/ubuntu/bin/picard.jar #find the directory were PICARD tools are
 
-```
-#we will use the MarkDuplicates picard tool
-
-java -Xmx60g -jar /home/ubuntu/bin/picard.jar #this start java picard
-
-MarkDuplicates I=NAME_namesorted_picard.bam  O=NAME_namesorted_picard_mrkdup.bam 
-ASSUME_SORT_ORDER=queryname 
-METRICS_FILE= NAME_mrk_dup_metrics.txt 
-QUIET=true 
-COMPRESSION_LEVEL=0 
-VALIDATION_STRINGENCY=LENIENT
-
-#all options need to be in a single line! 
-
-#print data to check on duplication metrics
+## Sort out **duplicated sequences** from the previously name_sorted BAM file
+we will use the MarkDuplicates picard tool
 
 ```
 
-## "Position" sort the BAM file. This will be needed for indexing of our BAM files
+java -Xmx60g -jar /home/ubuntu/bin/picard.jar MarkDuplicates I=$$$SAMPLE_NAME_namesorted_picard.bam  O=$$$SAMPLE_NAME_namesorted_picard_MRKDUP.bam ASSUME_SORT_ORDER=queryname METRICS_FILE=$$$SAMPLE_NAME_MRKDUP_metrics.txt QUIET=true COMPRESSION_LEVEL=0 VALIDATION_STRINGENCY=LENIENT
+
+#note that you add _mrkdup to the name meaning this file contains marked duplicates
+#DONT FORGET TO CHANGE THE NAME TO THE METRICS_FILE
 
 ```
-java -Xmx60g -jar /home/ubuntu/bin/picard.jar SortSam I=HCC1395_Exome_chr21_namesorted_picard_mrkdup.bam O=HCC1395_Exome_chr21_pos_sorted_mrkdup_picard.bam SO=coordinate
+You can print data to check on duplication metrics
+
+```
+head -n 20 $$$SAMPLE_NAME_MRKDUP_metrics.txt
+```
+## "Position" sort the sample BAM file. 
+This will be needed for indexing of our sample BAM files. You will sort by position the previously sorted by name BAM files
+
+```
+java -Xmx60g -jar /home/ubuntu/bin/picard.jar SortSam I=$$$SAMPLE_NAME_namesorted_picard_MRKDUP.bam O=$$$SAMPLE_NAME_pos_sorted_picard_MRKDUP.bam SO=coordinate
 ```
 
-## Index your BAM file.
+## Index your sample BAM file.
 We will be using the BuildBamIndex tool from Picard tools
 
 ```
-java -Xmx60g -jar /home/ubuntu/bin/picard.jar BuildBamIndex I=HCC1395_Exome_chr21_pos_sorted_mrkdup_picard.bam
+java -Xmx60g -jar /home/ubuntu/bin/picard.jar BuildBamIndex I=$$$SAMPLE_NAME_pos_sorted_picard_MRKDUP.bam
 ```
 
-## Assess quality of your alignment. Fast summary is to use flagstat
+#GREAT! YOU DID IT! (I hope) 🤞 
+
+## Assess quality of your alignment. 
+This fast summary will use flagstat. you will use the last file you created (position sorted, duplicates marked up INDEXED sample BAM file)
 ***You need to install samtools
 
 ```
-samtools flagstat HCC1395_Exome_chr21_pos_sorted_mrkdup_picard.bam > HCC1395_Exome_chr21_pos_sorted_mrkdup_picard_flagstat.flagstat
+samtools flagstat $$$SAMPLE_NAME_pos_sorted_picard_MRKDUP.bam > $$$SAMPLE_NAME_pos_sorted_picard_MRKDUP_flagstat.flagstat
 
-#to print your flagstat head -n 20 *.flagstat
+#NOTE THAT YOU WILL USE YOUR BAM FILE NOT BAI
+#this will make a file with *.flagstat extension
 
-1787552 + 0 properly paired (97.96% : N/A) -- this will be the number you want. 
+#to print your flagstat
+
+head -n 20 *.flagstat
+
+#this will spit something that will include something like: 1787552 + 0 properly paired (97.96% : N/A) 
+-- this will be the number you want. 
 
 ```
 
 ## FINAL WORKING MATERIAL
 ### Clean up the un-needed BAM/SAM files 
-(optional)
 
 ***At the end YOU ONLY NEED: 
 
-mrk_dup_metrics.txt
-pos_sorted_mrkdup_picard.bai #position sorted, index BAM file
-pos_sorted_mrkdup_picard.bam #position sorted, NOT-index BAM files
-pos_sorted_mrkdup_picard_flagstat.flagstat #flag-based quality stats for your aligntment. 
+1) mrk_dup_metrics.txt
+2) $$$SAMPLE_NAME_pos_sorted_picard_MRKDUP.bai position sorted ***which is your positioned sorted, marked duplicates index BAM file
+3) $$$SAMPLE_NAME_pos_sorted_picard_MRKDUP.bam ***which is your positioned sorted, marked duplicates NOT-index BAM file
+$) $$$SAMPLE_NAME_pos_sorted_picard_MRKDUP_flagstat.flagstat ***which is the FLAG-based quality stats file for your aligntment. 
+
+#GRACIAS! GOOD luck! 
