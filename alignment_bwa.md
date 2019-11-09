@@ -53,7 +53,7 @@ bwa mem -t 8 -o /workspace/results_folder/$$$SAMPLE_NAME.sam
 ```
 cd /workspace/results_folder
 
-samtools view -@ 8 -h -b -o $$$SAMPLE_NAME.bam $$$SAMPLE_NAME.sam
+samtools sort -@ 8 -h -b -o $$$SAMPLE_NAME.bam $$$SAMPLE_NAME.sam
 
 #note that you select your BAM file first then SAM file
 
