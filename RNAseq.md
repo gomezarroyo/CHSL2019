@@ -88,8 +88,8 @@ export PATH=/home/ubuntu/bin/CellRanger/cellranger-3.1.0:$PATH
 export PATH=/home/ubuntu/bin/STAR-2.7.3a/bin/Linux_x86_64_static:$PATH
 ```
 
-# Add the new PATHS for your working directories
-These can change between experiments
+# Add the new PATHS for your WORKING directories
+These can change between experiments. **ALL THESE NEED TO BE CREATED STILL**
 
 ```
 export RNA_HOME=~/workspace/rnaseq
@@ -105,9 +105,66 @@ export _JAVA_OPTIONS=-Djavax.accessibility.assistive_technologies=
 
 #to check if your bashrc file was edited you can look using 
 
-grep "WHATEVER_WORD_YOU_WANT" ~/.bashrc
+env | grep "WHATEVER_WORD_YOU_WANT" ~/.bashrc
+
+#this will access your environment first then pipe to use grep 
 
 ```
 
+## TOOL INSTALLATION
+(here we will only show SAMTOOLS but you need all of them!)
+
+**REMEMBER SOME SOFTWARE WILL NEED COMPILING AND SOME WILL NEED YOU TO CHANGE PATH DIRECTORIES, SOME WILL NEED PYTHON OR OTHER INSTALLATION COMMANDS BESIDES WGET**
+
+```
+uname -m
+
+cd $RNA_HOME
+mkdir student_tools
+cd student_tools
+
+```
+#SAMtools
+
+```
+cd $RNA_HOME/student_tools/
+
+wget https://github.com/samtools/samtools/releases/download/1.9/samtools-1.9.tar.bz2
+bunzip2 samtools-1.9.tar.bz2
+tar -xvf samtools-1.9.tar
+
+#check the extension for the unzipping if needed. in above file you need to BUNZIP then TAR
+
+then you need to compile the source code into software here
+
+cd /samtools-1.9
+
+make 
+#this command will start the compilation
+```
+
+Access the SAM tools! 
+
+```
+cd $RNA_HOME/student_tools/samtools-1.9
+
+./samtools
+
+#you can always find which tool your using by using the which command
+
+
+```
+
+
+
+
+
+
+
+
+
+
+
+```
 
 
