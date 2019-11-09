@@ -117,6 +117,15 @@ env | grep "WHATEVER_WORD_YOU_WANT" ~/.bashrc
 
 ```
 
+# FIXING your PATH
+NOTE: If you are worried your .bashrc is messed up you can redownload as follows:
+
+```
+cd ~
+wget -N https://raw.githubusercontent.com/griffithlab/rnabio.org/master/assets/setup/.bashrc
+source ~/.bashrc
+```
+
 ## TOOL INSTALLATION
 (here we will only show SAMTOOLS but you need all of them!)
 
