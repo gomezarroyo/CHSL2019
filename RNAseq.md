@@ -210,7 +210,10 @@ example using GRCh38 version of the genome from Ensembl. limited to chr22
 ```
 grep ENST00000342247 $RNA_REF_GTF | less -p "exon\s" -S
 ```
-3) Index your refence genome. This is usually part of the aligner sofware
+3) Index your refence genome. This is usually part of the aligner sofware. 
+
+# YOU WILL NEED A TON OF RAM SO BE MINDFUL. 
+You could also download/find indexed files already! 
 
 You can extract features from the GTF file to be used to index the FASTA file. In this example we use python scripts
 
@@ -243,11 +246,44 @@ zcat UHR_Rep1_ERCC-Mix1_Build37-ErccTranscripts-chr22.read1.fastq.gz | head -n 8
 to count it
 zcat UHR_Rep1_ERCC-Mix1_Build37-ErccTranscripts-chr22.read1.fastq.gz | grep -P "^\@HWI" | wc -l
 
+```
 
- 
+5) Verify the quality of your FASTQ files
+
+Try to run FastQC on your fastq files:
+```
+cd $RNA_HOME/data
+fastqc *.fastq.gz
+```
+
+6) Trimm the things you don't need after QC file showed you what it is. 
+This time we will use Flexbar
+
+FIRST
+
+Download necessary Illumina adapter sequence files.
+
+`
+echo $RNA_REFS_DIR
+mkdir -p $RNA_REFS_DIR
+cd $RNA_REFS_DIR
+wget http://genomedata.org/rnaseq-tutorial/illumina_multiplex.fa
+`
+
+**7) ALIGNMENT (FINALLY!)**
+
+`
+find *.bam
+#find me all the files that look like this
+find *.bam -exec echo samtools index {} \;
+find *.bam -exec echo samtools index {} \; | sh
+
+docker run -v /home
 
 
 
+
+`
 
 
 ```
