@@ -272,26 +272,148 @@ wget http://genomedata.org/rnaseq-tutorial/illumina_multiplex.fa
 
 **7) ALIGNMENT (FINALLY!)**
 
-`
+```
 find *.bam
 #find me all the files that look like this
 find *.bam -exec echo samtools index {} \;
 find *.bam -exec echo samtools index {} \; | sh
 
 docker run -v /home
+```
 
+#EXERCISE
 
+#make your directory 
+```
+mkdir -p ~/workspace/rnaseq/team_exercise/references
+```
 
+#download your data
+```
+#download adapter sequences for trimming
+wget -c http://genomedata.org/seq-tec-workshop/references/RNA/illumina_multiplex.fa
 
-`
+#reference FASTA corresponding to your team's assigned chromosome (e.g. chr11)
+wget -c http://genomedata.org/seq-tec-workshop/references/RNA/chr11.fa
 
+#download annotated reference for teams chromosome
+wget -c http://genomedata.org/seq-tec-workshop/references/RNA/chr11_Homo_sapiens.GRCh38.95.gtf
+```
+
+q1. What are the different types of features contained in the gtf file (e.g. transcript, gene)? What are the frequencies of the different types of features? (This is referring to the third field/column of the data).
+
+In order to get this answer, there are a series of commands that we can pipe together: 
+
+```
+cat chr11_Homo_sapiens.GRCh38.95.gtf | grep gene_name | cut -d$'\t' -f3 | sort | uniq -c | sort -r
+
+75294 exon
+  45290 CDS
+  12774 transcript
+  10313 five_prime_utr
+   9268 three_prime_utr
+   5902 start_codon
+   5140 stop_codon
+   3285 gene
+      3 Selenocysteine
 
 ```
 
+q2: Which genes have the highest number of transcripts (either gene id or gene name)? How many?
+```
 
+cat chr11_Homo_sapiens.GRCh38.95.gtf | grep -w transcript | cut -d$'\t' -f9 |  cut -d$';' -f1 | sort | uniq -c | sort -r | head -n 5
 
+#cut first to cut out column 9
+#then cut out 'between columns'
+ then sort -- count uniq sequences -- then sort
+ ```
+ 
+ Output shoud look like 
+  
+```
+     84 gene_id "ENSG00000007372"
+     61 gene_id "ENSG00000166444"
+     55 gene_id "ENSG00000006071"
+     50 gene_id "ENSG00000110436"
+     39 gene_id "ENSG00000255248"
+```
 
+Adaptor trimming 
+**Flexbar basic usage**
 
 ```
+#flexbar -r reads [-t target] [-b barcodes] [-a adapters] [options]
+
+flexbar --adapter-min-overlap 7 --adapter-trim-end RIGHT --adapters ~/workspace/rnaseq/team_exercise/references/illumina_multiplex.fa --pre-trim-left 13 --max-uncalled 300 --min-read-length 25 --threads 8 --zip-output GZ --reads ~/workspace/rnaseq/team_exercise/data/SRR10045016_1.fastq.gz --reads2 ~/workspace/rnaseq/team_exercise/data/SRR10045016_2.fastq.gz --target ~/workspace/rnaseq/team_exercise/data/trimmed/SRR10045016
+
+flexbar --adapter-min-overlap 7 --adapter-trim-end RIGHT --adapters ~/workspace/rnaseq/team_exercise/references/illumina_multiplex.fa --pre-trim-left 13 --max-uncalled 300 --min-read-length 25 --threads 8 --zip-output GZ --reads ~/workspace/rnaseq/team_exercise/data/SRR10045017_1.fastq.gz --reads2 ~/workspace/rnaseq/team_exercise/data/SRR10045017_2.fastq.gz --target ~/workspace/rnaseq/team_exercise/data/trimmed/SRR10045017
+
+flexbar --adapter-min-overlap 7 --adapter-trim-end RIGHT --adapters ~/workspace/rnaseq/team_exercise/references/illumina_multiplex.fa --pre-trim-left 13 --max-uncalled 300 --min-read-length 25 --threads 8 --zip-output GZ --reads ~/workspace/rnaseq/team_exercise/data/SRR10045018_1.fastq.gz --reads2 ~/workspace/rnaseq/team_exercise/data/SRR10045018_2.fastq.gz --target ~/workspace/rnaseq/team_exercise/data/trimmed/SRR10045018
+
+flexbar --adapter-min-overlap 7 --adapter-trim-end RIGHT --adapters ~/workspace/rnaseq/team_exercise/references/illumina_multiplex.fa --pre-trim-left 13 --max-uncalled 300 --min-read-length 25 --threads 8 --zip-output GZ --reads ~/workspace/rnaseq/team_exercise/data/SRR10045019_1.fastq.gz --reads2 ~/workspace/rnaseq/team_exercise/data/SRR10045019_2.fastq.gz --target ~/workspace/rnaseq/team_exercise/data/trimmed/SRR10045019
+
+flexbar --adapter-min-overlap 7 --adapter-trim-end RIGHT --adapters ~/workspace/rnaseq/team_exercise/references/illumina_multiplex.fa --pre-trim-left 13 --max-uncalled 300 --min-read-length 25 --threads 8 --zip-output GZ --reads ~/workspace/rnaseq/team_exercise/data/SRR10045020_1.fastq.gz --reads2 ~/workspace/rnaseq/team_exercise/data/SRR10045020_2.fastq.gz --target ~/workspace/rnaseq/team_exercise/data/trimmed/SRR10045020
+
+flexbar --adapter-min-overlap 7 --adapter-trim-end RIGHT --adapters ~/workspace/rnaseq/team_exercise/references/illumina_multiplex.fa --pre-trim-left 13 --max-uncalled 300 --min-read-length 25 --threads 8 --zip-output GZ --reads ~/workspace/rnaseq/team_exercise/data/SRR10045021_1.fastq.gz --reads2 ~/workspace/rnaseq/team_exercise/data/SRR10045021_2.fastq.gz --target ~/workspace/rnaseq/team_exercise/data/trimmed/SRR10045021
+
+```
+Perform a quality check before and after cleaning up your data
+```
+cd ~/workspace/rnaseq/team_exercise/data/trimmed/
+fastqc *.fastq.gz
+
+#make sure your fastqc is installed
+```
+
+# Aligment
+## Index your REFERENCE genome
+
+```
+mkdir ~/workspace/rnaseq/team_exercise/alignments/hisat2
+cd ~/workspace/rnaseq/team_exercise/alignments/hisat2
+
+~/workspace/rnaseq/team_exercise/data/
+~/workspace/rnaseq/team_exercise/references/
+
+cd ~/workspace/rnaseq/team_exercise/references/
+
+hisat2_extract_splice_sites.py ~/workspace/rnaseq/team_exercise/references/chr11_Homo_sapiens.GRCh38.95.gtf > ~/workspace/rnaseq/team_exercise/references/splicesites.tsv
+
+hisat2_extract_exons.py ~/workspace/rnaseq/team_exercise/references/chr11_Homo_sapiens.GRCh38.95.gtf > ~/workspace/rnaseq/team_exercise/references/exons.tsv
+
+hisat2-build -p 8 --ss ~/workspace/rnaseq/team_exercise/references/splicesites.tsv --exon ~/workspace/rnaseq/team_exercise/references/exons.tsv ~/workspace/rnaseq/team_exercise/references/chr11.fa ~/workspace/rnaseq/team_exercise/references/chr11
+
+#the last part $RNA_REF_INDEX (in the rnabio.org exercise) means that every output file will be $RNA_REF_INDEX which in our case is (~/workspace/rnaseq/team_exercise/references/)chr11
+
+```
+#Alignment! (HISAT2)
+```
+mkdir ~/workspace/rnaseq/team_exercise/alignments/hisat2
+
+export HISAT=~/workspace/rnaseq/team_exercise/alignments/hisat2
+
+hisat2 -p 8 --rg-id=KO_S1 --rg SM:KO --rg LB:lib1 --rg PL:ILLUMINA --rg PU:CXX1234-ACTGAC.1 -x /home/ubuntu/workspace/rnaseq/team_exercise/references/chr11 --dta --rna-strandness RF -1 /home/ubuntu/workspace/rnaseq/team_exercise/data/trimmed/SRR10045016_1.fastq.gz -2 /home/ubuntu/workspace/rnaseq/team_exercise/data/trimmed/SRR10045016_2.fastq.gz -S $HISAT/SRR10045016.sam
+
+hisat2 -p 8 --rg-id=KO_S2 --rg SM:KO --rg LB:lib1 --rg PL:ILLUMINA --rg PU:CXX1234-ACTGAC.1 -x /home/ubuntu/workspace/rnaseq/team_exercise/references/chr11 --dta --rna-strandness RF -1 /home/ubuntu/workspace/rnaseq/team_exercise/data/trimmed/SRR10045017_1.fastq.gz -2 /home/ubuntu/workspace/rnaseq/team_exercise/data/trimmed/SRR10045017_2.fastq.gz -S $HISAT/SRR10045017.sam
+
+hisat2 -p 8 --rg-id=KO_S3 --rg SM:KO --rg LB:lib1 --rg PL:ILLUMINA --rg PU:CXX1234-ACTGAC.1 -x /home/ubuntu/workspace/rnaseq/team_exercise/references/chr11 --dta --rna-strandness RF -1 /home/ubuntu/workspace/rnaseq/team_exercise/data/trimmed/SRR10045018_1.fastq.gz -2 /home/ubuntu/workspace/rnaseq/team_exercise/data/trimmed/SRR10045018_2.fastq.gz -S $HISAT/SRR10045018.sam
+
+hisat2 -p 8 --rg-id=RQ_S1 --rg SM:RQ --rg LB:lib1 --rg PL:ILLUMINA --rg PU:CXX1234-ACTGAC.1 -x /home/ubuntu/workspace/rnaseq/team_exercise/references/chr11 --dta --rna-strandness RF -1 /home/ubuntu/workspace/rnaseq/team_exercise/data/trimmed/SRR10045019_1.fastq.gz -2 /home/ubuntu/workspace/rnaseq/team_exercise/data/trimmed/SRR10045019_2.fastq.gz -S $HISAT/SRR10045019.sam
+
+hisat2 -p 8 --rg-id=RQ_S2 --rg SM:RQ --rg LB:lib1 --rg PL:ILLUMINA --rg PU:CXX1234-ACTGAC.1 -x /home/ubuntu/workspace/rnaseq/team_exercise/references/chr11 --dta --rna-strandness RF -1 /home/ubuntu/workspace/rnaseq/team_exercise/data/trimmed/SRR10045020_1.fastq.gz -2 /home/ubuntu/workspace/rnaseq/team_exercise/data/trimmed/SRR10045020_2.fastq.gz -S $HISAT/SRR10045020.sam
+
+hisat2 -p 8 --rg-id=RQ_S3 --rg SM:RQ --rg LB:lib1 --rg PL:ILLUMINA --rg PU:CXX1234-ACTGAC.1 -x /home/ubuntu/workspace/rnaseq/team_exercise/references/chr11 --dta --rna-strandness RF -1 /home/ubuntu/workspace/rnaseq/team_exercise/data/trimmed/SRR10045021_1.fastq.gz -2 /home/ubuntu/workspace/rnaseq/team_exercise/data/trimmed/SRR10045021_2.fastq.gz -S $HISAT/SRR10045021.sam
+
+```
+#Convert from BAM to SAM
+
+```
+samtools sort -@ 8 -o SRR10045016.bam SRR10045016.sam
+samtools sort -@ 8 -o SRR10045017.bam SRR10045017.sam
+samtools sort -@ 8 -o SRR10045018.bam SRR10045018.sam
+samtools sort -@ 8 -o SRR10045019.bam SRR10045019.sam
+samtools sort -@ 8 -o SRR10045020.bam SRR10045020.sam
+samtools sort -@ 8 -o SRR10045021.bam SRR10045021.sam
 
 
