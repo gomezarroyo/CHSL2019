@@ -18,7 +18,7 @@ Notes:
 
 # Set up your environment
 
-```diff```
+```
 mkdir /$$$path/rnaseq
 
 export RNA_HOME=~/$$$path/rnaseq
@@ -204,13 +204,16 @@ docker pull biocontainers/samtools:v1.9-4-deb_cv1
 docker run -t biocontainers/samtools:v1.9-4-deb_cv1 samtools --help
 ```
 
-# Introduction to INPUTS. 
 
-## Basic pipeline
+# RNASEQ alignment pipeline
+
+## Basic pipeline (includes setting up your inputs)
 
 1) Obtain a reference genome (i.e genome.fa)
 2) Obtain the annotations file (i.e annotations.gtf)
+  - Access a specific gene: grep ENST00000342247 $RNA_REF_GTF | less -p "exon\s" -S
 3) Index your refence genome (this is usually part of the aligner sofware)
+  - You need to extract features from the GTF file (such as exons and slice sites) to be used to index the FASTA file with HISAT
   ***YOU WILL NEED A TON OF RAM SO BE MINDFUL*** You could also download/find indexed files already! 
 4) Find your datasets (i.e fastq files)
 5) Evaluate quality of your FASTQ files coming out of the sequencer. 
@@ -227,55 +230,38 @@ docker run -t biocontainers/samtools:v1.9-4-deb_cv1 samtools --help
 
 Always check the quality values read i.e sanger format vs old solexa or old illumina <1.8  version
 
-1) Obtain a reference genome
-example using GRCh38 version of the genome from Ensembl. limited to chr22
+# EXERCISE
 
-2) Obtain the annotations file. Access a specific gene
-```
-grep ENST00000342247 $RNA_REF_GTF | less -p "exon\s" -S
-```
-3) Index your refence genome. This is usually part of the aligner sofware. 
+The goal of the following team assignment is for students to gain hands-on experience by working on recently published RNA-seq data and apply the concepts they have learned up to RNA alignment. To complete this assignment, students will need to review commands we performed in earlier sections.
 
-# YOU WILL NEED A TON OF RAM SO BE MINDFUL. 
-You could also download/find indexed files already! 
+## Background on Dataset used
 
-You can extract features from the GTF file to be used to index the FASTA file. In this example we use python scripts
+In this assignment, we will be using subsets of the GSE136366 dataset (Roczniak-Ferguson A, Ferguson SM. Pleiotropic requirements for human TDP-43 in the regulation of cell and organelle homeostasis. Life Sci Alliance 2019 Oct;2(5). PMID: 31527135). This dataset consists of 6 RNA sequencing files of human cells that either express or lack the TDP-43 protein.
 
-```
-hisat2_extract_splice_sites.py $RNA_REF_GTF > $RNA_REFS_DIR/splicesites.tsv
-hisat2_extract_exons.py $RNA_REF_GTF > $RNA_REFS_DIR/exons.tsv
-```
+## Experimental Details
 
-Then you can go ahead an INDEX your reference genome
+The libraries are prepared as paired end.
+The samples are sequenced on a Illumina’s HiSeq 2500.
+Each read is 70 bp long
+The dataset is located here: GSE136366
+3 samples from TDP-43 Knockout HeLa cells and 3 samples wherein a wildtype TDP-43 transgene was re-expressed.
+For this exercise we will be using different subsets (Team A: chr11  Team B: chr12  Team C: chr17  Team D: chr19  Team E: chr6) of the reads.
 
-```
-hisat2-build -p 8 --ss $RNA_REFS_DIR/splicesites.tsv --exon $RNA_REFS_DIR/exons.tsv $RNA_REF_FASTA $RNA_REF_INDEX
-```
+The files are named based on their SRR id’s, and obey the following key:
+SRR10045016 = KO sample 1
+SRR10045017 = KO sample 2
+SRR10045018 = KO sample 3
+SRR10045019 = Rescue sample 1
+SRR10045020 = Rescue sample 2
+SRR10045021 = Rescue sample 3
 
-4) Download your datasets
-
-```
-echo $RNA_DATA_DIR
-mkdir -p $RNA_DATA_DIR
-cd $RNA_DATA_DIR
-wget http://genomedata.org/rnaseq-tutorial/HBR_UHR_ERCC_ds_5pc.tar
-
-#untar it
-tar -xvf HBR_UHR_ERCC_ds_5pc.tar
-
-then access it, you will need to use zcat command
-
-zcat UHR_Rep1_ERCC-Mix1_Build37-ErccTranscripts-chr22.read1.fastq.gz | head -n 8
-
-to count it
-zcat UHR_Rep1_ERCC-Mix1_Build37-ErccTranscripts-chr22.read1.fastq.gz | grep -P "^\@HWI" | wc -l
-
-#make your directory 
+## make your directories 
 ```
 mkdir -p ~/workspace/rnaseq/team_exercise/references
+mkdir -p ~/workspace/rnaseq/team_exercise/data
 ```
 
-#download your data
+## download your data
 ```
 #download adapter sequences for trimming
 wget -c http://genomedata.org/seq-tec-workshop/references/RNA/illumina_multiplex.fa
@@ -326,7 +312,7 @@ cat chr11_Homo_sapiens.GRCh38.95.gtf | grep -w transcript | cut -d$'\t' -f9 |  c
      39 gene_id "ENSG00000255248"
 ```
 
-Adaptor and Hard trimming 
+## Adaptor and Hard trimming 
 **Flexbar basic usage**
 
 Download necessary Illumina adapter sequence files and place in refernces directory where your GTF file is. 
@@ -355,7 +341,7 @@ flexbar --adapter-min-overlap 7 --adapter-trim-end RIGHT --adapters ~/workspace/
 flexbar --adapter-min-overlap 7 --adapter-trim-end RIGHT --adapters ~/workspace/rnaseq/team_exercise/references/illumina_multiplex.fa --pre-trim-left 13 --max-uncalled 300 --min-read-length 25 --threads 8 --zip-output GZ --reads ~/workspace/rnaseq/team_exercise/data/SRR10045021_1.fastq.gz --reads2 ~/workspace/rnaseq/team_exercise/data/SRR10045021_2.fastq.gz --target ~/workspace/rnaseq/team_exercise/data/trimmed/SRR10045021
 
 ```
-Perform a quality check, again AFTER cleaning up your data
+## Perform a quality check, again AFTER cleaning up your data
 ```
 cd ~/workspace/rnaseq/team_exercise/data/trimmed/
 fastqc *.fastq.gz
@@ -363,7 +349,6 @@ fastqc *.fastq.gz
 #make sure your fastqc is installed
 ```
 
-# Aligment
 ## Index your REFERENCE genome
 
 ```
@@ -384,7 +369,8 @@ hisat2-build -p 8 --ss ~/workspace/rnaseq/team_exercise/references/splicesites.t
 #the last part $RNA_REF_INDEX (in the rnabio.org exercise) means that every output file will be $RNA_REF_INDEX which in our case is (~/workspace/rnaseq/team_exercise/references/)chr11
 
 ```
-#Alignment! (HISAT2)
+## Alignment! (HISAT2)
+
 ```
 mkdir ~/workspace/rnaseq/team_exercise/alignments/hisat2
 
@@ -406,7 +392,7 @@ hisat2 -p 8 --rg-id=RQ_S2 --rg SM:RQ --rg LB:lib1 --rg PL:ILLUMINA --rg PU:CXX12
 hisat2 -p 8 --rg-id=RQ_S3 --rg SM:RQ --rg LB:lib1 --rg PL:ILLUMINA --rg PU:CXX1234-ACTGAC.1 -x /home/ubuntu/workspace/rnaseq/team_exercise/references/chr11 --dta --rna-strandness RF -1 /home/ubuntu/workspace/rnaseq/team_exercise/data/trimmed/SRR10045021_1.fastq.gz -2 /home/ubuntu/workspace/rnaseq/team_exercise/data/trimmed/SRR10045021_2.fastq.gz -S $HISAT/SRR10045021.sam
 
 ```
-#Convert from BAM to SAM
+## Convert from BAM to SAM
 
 ```
 samtools sort -@ 8 -o SRR10045016.bam SRR10045016.sam
@@ -417,7 +403,7 @@ samtools sort -@ 8 -o SRR10045020.bam SRR10045020.sam
 samtools sort -@ 8 -o SRR10045021.bam SRR10045021.sam
 ```
 
-#Merge HISAT2 BAM files
+## Merge HISAT2 BAM files
 use picard tools
 
 ```
@@ -443,7 +429,7 @@ You could have done it as a loop too
 find *.bam -exec echo samtools flagstat {} \; | sh
 
 ```
-***INDEX YOUR BAM FILES***
+## INDEXing your BAM files
 
 ```
 
@@ -468,13 +454,15 @@ docker run -v /workspace/rnaseq/team_exercise/alignments/hisat2:/workspace bioco
 4) type your tool name and the command (samtools index) and your sample name (KO.bam)
 
 ```
-# Visualize in IGV
+## Visualize in IGV
 
 Load your IP address from your instance on browser
 Then find your BAM file within your instance directories and copy link address
 Go to IGV >> file >> load from URL (address from your BAM files)
 
-#COUNTING AND DIFFERENTIAL GENE EXPRESSION
+
+
+# COUNTING AND DIFFERENTIAL GENE EXPRESSION
 
 Choose a tool for counting. In this case we will use Stringtie because it can help you count isoforms as well (as opposed to Deseq or HTseq). 
 
