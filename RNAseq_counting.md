@@ -100,3 +100,99 @@ column -t transcript_tpm_all_samples.tsv | less -S
 column -t gene_tpm_all_samples.tsv | less -S
 
 ```
+
+# EXERCISE
+
+```
+
+cd $RNA_HOME/practice/
+pwd/home/ubuntu/workspace/rnaseq/practice
+
+mkdir -p expression/stringtie/ref_only/
+cd expression/stringtie/ref_only/
+
+stringtie -p 8 -G $RNA_REF_GTF -e -B -o HCC1395_tumor_rep1/transcripts.gtf $RNA_HOME/practice/alignments/hisat2/HCC1395_tumor_rep1.bam
+
+stringtie -p 8 -G $RNA_REF_GTF -e -B -o HCC1395_tumor_rep2/transcripts.gtf -A HCC1395_tumor_rep2/gene_abundances.tsv $RNA_HOME/practice/alignments/hisat2/HCC1395_tumor_rep2.bam
+
+Do it on the merged files
+
+stringtie -p 8 -G $RNA_REF_GTF -e -B -o HCC1395_normal/transcripts.gtf -A HCC1395_normal/gene_abundances.tsv $RNA_HOME/practice/alignments/hisat2/HCC1395_normal.bam
+
+stringtie -p 8 -G $RNA_REF_GTF -e -B -o HCC1395_tumor/transcripts.gtf -A HCC1395_tumor/gene_abundances.tsv $RNA_HOME/practice/alignments/hisat2/HCC1395_tumor.bam
+
+#this one has option A to spit out gene_abundances
+
+```
+# HTSeq Count: The RAW counts method
+
+**NOT RECOMMENDED FOR TRANSCRIPT LEVEL BUT RATHER GENE LEVEL EXPRESSION ANALYSIS**
+
+```
+
+cd $RNA_HOME/
+mkdir -p expression/htseq_counts
+cd expression/htseq_counts
+
+YOU MUST BE INSIDE HTSEQ COUNTS FOLDER
+
+htseq-count --format bam --order pos --mode intersection-strict --stranded reverse --minaqual 1 --type exon --idattr gene_id $RNA_ALIGN_DIR/UHR_Rep1.bam $RNA_REF_GTF > UHR_Rep1_gene.tsv
+
+#OUTPUT
+
+REF_GTF > UHR_Rep1_gene.tsv
+56295 GFF lines processed.
+100000 SAM alignment record pairs processed.
+200000 SAM alignment record pairs processed.
+Warning: Mate records missing for 672 records; first such record: <SAM_Alignment object: Paired-end read 'HWI-ST718_146963544:5:1208:19054:7891' aligned to 22:[15798693,15798793)/+>.
+227728 SAM alignment pairs processed.
+```
+check out the output. 
+its is basically gene name and raw counts
+
+```
+head UHR_Rep1_gene.tsv
+```
+#OPTIONS to use
+
+’–format’ specify the input file format one of BAM or SAM. Since we have BAM format files, select ‘bam’ for this option.
+’–order’ provide the expected sort order of the input file. Previously we generated position sorted BAM files so use ‘pos’.
+’–mode’ determines how to deal with reads that overlap more than one feature. We believe the ‘intersection-strict’ mode is best.
+’–stranded’ specifies whether data is stranded or not. The TruSeq strand-specific RNA libraries suggest the ‘reverse’ option for this parameter.
+’–minaqual’ will skip all reads with alignment quality lower than the given minimum value
+’–type’ specifies the feature type (3rd column in GFF file) to be used. (default, suitable for RNA-Seq and Ensembl GTF files: exon)
+’–idattr’ The feature ID used to identify the counts in the output table. The default, suitable for RNA-SEq and Ensembl GTF files, is gene_id.
+```
+RUN the rest!
+
+htseq-count --format bam --order pos --mode intersection-strict --stranded reverse --minaqual 1 --type exon --idattr gene_id $RNA_ALIGN_DIR/UHR_Rep2.bam $RNA_REF_GTF > UHR_Rep2_gene.tsv
+htseq-count --format bam --order pos --mode intersection-strict --stranded reverse --minaqual 1 --type exon --idattr gene_id $RNA_ALIGN_DIR/UHR_Rep3.bam $RNA_REF_GTF > UHR_Rep3_gene.tsv
+htseq-count --format bam --order pos --mode intersection-strict --stranded reverse --minaqual 1 --type exon --idattr gene_id $RNA_ALIGN_DIR/HBR_Rep1.bam $RNA_REF_GTF > HBR_Rep1_gene.tsv
+htseq-count --format bam --order pos --mode intersection-strict --stranded reverse --minaqual 1 --type exon --idattr gene_id $RNA_ALIGN_DIR/HBR_Rep2.bam $RNA_REF_GTF > HBR_Rep2_gene.tsv
+htseq-count --format bam --order pos --mode intersection-strict --stranded reverse --minaqual 1 --type exon --idattr gene_id $RNA_ALIGN_DIR/HBR_Rep3.bam $RNA_REF_GTF > HBR_Rep3_gene.tsv
+```
+## Merge results files into a single matrix for use in edgeR. 
+The following joins the results for each replicate together, adds a header, reformats the result as a tab delimited file, and shows you the first 10 lines of the resulting file
+
+```
+cd $RNA_HOME/expression/htseq_counts/
+join UHR_Rep1_gene.tsv UHR_Rep2_gene.tsv | join - UHR_Rep3_gene.tsv | join - HBR_Rep1_gene.tsv | join - HBR_Rep2_gene.tsv | join - HBR_Rep3_gene.tsv > gene_read_counts_table_all.tsv
+echo "GeneID UHR_Rep1 UHR_Rep2 UHR_Rep3 HBR_Rep1 HBR_Rep2 HBR_Rep3" > header.txt
+cat header.txt gene_read_counts_table_all.tsv | grep -v "__" | awk -v OFS="\t" '$1=$1' > gene_read_counts_table_all_final.tsv
+rm -f gene_read_counts_table_all.tsv header.txt
+head gene_read_counts_table_all_final.tsv | column -t
+
+#OPTIONS
+
+-grep -v "__" is being used to filter out the summary lines at the end of the files that ht-seq count gives to summarize reads that had no feature, were ambiguous, did not align at all, did not align due to poor alignment quality, or the alignment was not unique.
+
+-awk -v OFS="\t" '$1=$1' is using awk to replace the single space characters that were in the concatenated version of our header.txt and gene_read_counts_table_all.tsv with a tab character. -v is used to reset the variable OFS, which stands for Output Field Separator. By default, this is a single space. By specifying OFS="\t", we are telling awk to replace the single space with a tab. The '$1=$1' tells awk to reevaluate the input using the new output variable.
+```
+
+# Expression analysis
+
+
+
+```
+
+
