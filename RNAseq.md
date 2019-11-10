@@ -5,7 +5,7 @@ Things to study:
 2) Python for iteration
 3) Data design (see link in slides)
 4) Download ATOM
-5) Download or look for bpipe software for paralallelyzing
+5) Download or look for bpipe software for paralallelyzing. https://jasonjwilliamsny.github.io/wrangling-genomics/01-automating_a_workflow.html
 
 Notes:
 1) Always remove duplicates for DNA seq data. You do not need to remove/mark duplicates in RNAseq data. 
@@ -27,8 +27,8 @@ export RNA_HOME=~/$$$path/rnaseq
 echo $RNA_HOME
 ```
 
-# Add other environmental variables needed
-This includes the software you need. 
+# Add other environmental variables needed (OPTIONAL but very useful). 
+This includes the software you need. ***Its probably useful to make sure your tools are in the environment
 
 ```
 export RNA_DATA_DIR=$RNA_HOME/data
@@ -199,7 +199,26 @@ docker pull biocontainers/samtools:v1.9-4-deb_cv1
 docker run -t biocontainers/samtools:v1.9-4-deb_cv1 samtools --help
 ```
 
-# Introduction to INPUTS
+# Introduction to INPUTS. 
+
+## Basic pipeline
+
+1) Obtain a reference genome (i.e genome.fa)
+2) Obtain the annotations file (i.e annotations.gtf)
+3) Index your refence genome (this is usually part of the aligner sofware)
+  ***YOU WILL NEED A TON OF RAM SO BE MINDFUL*** You could also download/find indexed files already! 
+4) Find your datasets (i.e fastq files)
+5) Evaluate quality of your FASTQ files coming out of the sequencer. 
+6) Trim and Groom your FASTQ files and place in a different directory to avoid confusing with pre-trimmed. 
+  a) you can download the illumina adapter sequences to guide software when to get rid of them. 
+7) Perform a quality check, again AFTER cleaning up your data
+8) Align your FastQ files to reference genome
+9) Convert your SAM to BAM
+10) Merge BAM replicates (if needed)
+11) INDEX your BAM files.
+12) Visualize on IGV (OPTIONAL but USEFUL)
+
+## GOTCHAS
 
 Always check the quality values read i.e sanger format vs old solexa or old illumina <1.8  version
 
@@ -245,43 +264,6 @@ zcat UHR_Rep1_ERCC-Mix1_Build37-ErccTranscripts-chr22.read1.fastq.gz | head -n 8
 
 to count it
 zcat UHR_Rep1_ERCC-Mix1_Build37-ErccTranscripts-chr22.read1.fastq.gz | grep -P "^\@HWI" | wc -l
-
-```
-
-5) Verify the quality of your FASTQ files
-
-Try to run FastQC on your fastq files:
-```
-cd $RNA_HOME/data
-fastqc *.fastq.gz
-```
-
-6) Trimm the things you don't need after QC file showed you what it is. 
-This time we will use Flexbar
-
-FIRST
-
-Download necessary Illumina adapter sequence files.
-
-`
-echo $RNA_REFS_DIR
-mkdir -p $RNA_REFS_DIR
-cd $RNA_REFS_DIR
-wget http://genomedata.org/rnaseq-tutorial/illumina_multiplex.fa
-`
-
-**7) ALIGNMENT (FINALLY!)**
-
-```
-find *.bam
-#find me all the files that look like this
-find *.bam -exec echo samtools index {} \;
-find *.bam -exec echo samtools index {} \; | sh
-
-docker run -v /home
-```
-
-#EXERCISE
 
 #make your directory 
 ```
@@ -339,10 +321,20 @@ cat chr11_Homo_sapiens.GRCh38.95.gtf | grep -w transcript | cut -d$'\t' -f9 |  c
      39 gene_id "ENSG00000255248"
 ```
 
-Adaptor trimming 
+Adaptor and Hard trimming 
 **Flexbar basic usage**
 
+Download necessary Illumina adapter sequence files and place in refernces directory where your GTF file is. 
+**you can find illumina adaptor sequences here: wget http://genomedata.org/rnaseq-tutorial/illumina_multiplex.fa**
+
 ```
+create PATH to references folder for ease of use. 
+export REFS=/home/ubuntu/workspace/rnaseq/team_exercise/references
+
+cd $REFS
+pwd
+~/workspace/rnaseq/team_exercise/references
+
 #flexbar -r reads [-t target] [-b barcodes] [-a adapters] [options]
 
 flexbar --adapter-min-overlap 7 --adapter-trim-end RIGHT --adapters ~/workspace/rnaseq/team_exercise/references/illumina_multiplex.fa --pre-trim-left 13 --max-uncalled 300 --min-read-length 25 --threads 8 --zip-output GZ --reads ~/workspace/rnaseq/team_exercise/data/SRR10045016_1.fastq.gz --reads2 ~/workspace/rnaseq/team_exercise/data/SRR10045016_2.fastq.gz --target ~/workspace/rnaseq/team_exercise/data/trimmed/SRR10045016
@@ -358,7 +350,7 @@ flexbar --adapter-min-overlap 7 --adapter-trim-end RIGHT --adapters ~/workspace/
 flexbar --adapter-min-overlap 7 --adapter-trim-end RIGHT --adapters ~/workspace/rnaseq/team_exercise/references/illumina_multiplex.fa --pre-trim-left 13 --max-uncalled 300 --min-read-length 25 --threads 8 --zip-output GZ --reads ~/workspace/rnaseq/team_exercise/data/SRR10045021_1.fastq.gz --reads2 ~/workspace/rnaseq/team_exercise/data/SRR10045021_2.fastq.gz --target ~/workspace/rnaseq/team_exercise/data/trimmed/SRR10045021
 
 ```
-Perform a quality check before and after cleaning up your data
+Perform a quality check, again AFTER cleaning up your data
 ```
 cd ~/workspace/rnaseq/team_exercise/data/trimmed/
 fastqc *.fastq.gz
@@ -471,11 +463,23 @@ docker run -v /workspace/rnaseq/team_exercise/alignments/hisat2:/workspace bioco
 4) type your tool name and the command (samtools index) and your sample name (KO.bam)
 
 ```
-Visualize in IGV
+# Visualize in IGV
 
-Load your IP address on browser
-Then find your BAM file and copy link address
-Go to IGV >> file >> load from URL
+Load your IP address from your instance on browser
+Then find your BAM file within your instance directories and copy link address
+Go to IGV >> file >> load from URL (address from your BAM files)
+
+#COUNTING AND DIFFERENTIAL GENE EXPRESSION
+
+Choose a tool for counting. In this case we will use Stringtie because it can help you count isoforms as well (as opposed to Deseq or HTseq). 
+
+1) StringTie will help you count but taking into account isoforms instead of just globally adding all transcript levels together. 
+2)Some Basic stringie stuff. 
+  - Merge all gene structures from all samples 
+    - this makes a new reference file that will include transcripts with assembled and potentially novel transcripts
+  - Then re-run against your de novo transcriptome from all samples -- this will help understand count levels of isoforms that may have not been found from sample to sample. 
+  3) Then you will get total transcript levels plus isoform transcript levels. 
+  
 
 
 
