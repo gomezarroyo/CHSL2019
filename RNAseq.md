@@ -461,19 +461,3 @@ Then find your BAM file within your instance directories and copy link address
 Go to IGV >> file >> load from URL (address from your BAM files)
 
 
-
-# COUNTING AND DIFFERENTIAL GENE EXPRESSION
-
-Choose a tool for counting. In this case we will use Stringtie because it can help you count isoforms as well (as opposed to Deseq or HTseq). 
-
-1) StringTie will help you count but taking into account isoforms instead of just globally adding all transcript levels together. 
-2)Some Basic stringie stuff. 
-  - Merge all gene structures from all samples 
-    - this makes a new reference file that will include transcripts with assembled and potentially novel transcripts
-  - Then re-run against your de novo transcriptome from all samples -- this will help understand count levels of isoforms that may have not been found from sample to sample. 
-  3) Then you will get total transcript levels plus isoform transcript levels. 
-  
-
-
-
-
