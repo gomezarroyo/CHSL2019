@@ -394,15 +394,10 @@ mkdir ~/workspace/rnaseq/team_exercise/alignments/hisat2
 export HISAT=~/workspace/rnaseq/team_exercise/alignments/hisat2
 
 hisat2 -p 8 --rg-id=KO_S1 --rg SM:KO --rg LB:lib1 --rg PL:ILLUMINA --rg PU:CXX1234-ACTGAC.1 -x /home/ubuntu/workspace/rnaseq/team_exercise/references/chr11 --dta --rna-strandness RF -1 /home/ubuntu/workspace/rnaseq/team_exercise/data/trimmed/SRR10045016_1.fastq.gz -2 /home/ubuntu/workspace/rnaseq/team_exercise/data/trimmed/SRR10045016_2.fastq.gz -S $HISAT/SRR10045016.sam
-
 hisat2 -p 8 --rg-id=KO_S2 --rg SM:KO --rg LB:lib1 --rg PL:ILLUMINA --rg PU:CXX1234-ACTGAC.1 -x /home/ubuntu/workspace/rnaseq/team_exercise/references/chr11 --dta --rna-strandness RF -1 /home/ubuntu/workspace/rnaseq/team_exercise/data/trimmed/SRR10045017_1.fastq.gz -2 /home/ubuntu/workspace/rnaseq/team_exercise/data/trimmed/SRR10045017_2.fastq.gz -S $HISAT/SRR10045017.sam
-
 hisat2 -p 8 --rg-id=KO_S3 --rg SM:KO --rg LB:lib1 --rg PL:ILLUMINA --rg PU:CXX1234-ACTGAC.1 -x /home/ubuntu/workspace/rnaseq/team_exercise/references/chr11 --dta --rna-strandness RF -1 /home/ubuntu/workspace/rnaseq/team_exercise/data/trimmed/SRR10045018_1.fastq.gz -2 /home/ubuntu/workspace/rnaseq/team_exercise/data/trimmed/SRR10045018_2.fastq.gz -S $HISAT/SRR10045018.sam
-
 hisat2 -p 8 --rg-id=RQ_S1 --rg SM:RQ --rg LB:lib1 --rg PL:ILLUMINA --rg PU:CXX1234-ACTGAC.1 -x /home/ubuntu/workspace/rnaseq/team_exercise/references/chr11 --dta --rna-strandness RF -1 /home/ubuntu/workspace/rnaseq/team_exercise/data/trimmed/SRR10045019_1.fastq.gz -2 /home/ubuntu/workspace/rnaseq/team_exercise/data/trimmed/SRR10045019_2.fastq.gz -S $HISAT/SRR10045019.sam
-
 hisat2 -p 8 --rg-id=RQ_S2 --rg SM:RQ --rg LB:lib1 --rg PL:ILLUMINA --rg PU:CXX1234-ACTGAC.1 -x /home/ubuntu/workspace/rnaseq/team_exercise/references/chr11 --dta --rna-strandness RF -1 /home/ubuntu/workspace/rnaseq/team_exercise/data/trimmed/SRR10045020_1.fastq.gz -2 /home/ubuntu/workspace/rnaseq/team_exercise/data/trimmed/SRR10045020_2.fastq.gz -S $HISAT/SRR10045020.sam
-
 hisat2 -p 8 --rg-id=RQ_S3 --rg SM:RQ --rg LB:lib1 --rg PL:ILLUMINA --rg PU:CXX1234-ACTGAC.1 -x /home/ubuntu/workspace/rnaseq/team_exercise/references/chr11 --dta --rna-strandness RF -1 /home/ubuntu/workspace/rnaseq/team_exercise/data/trimmed/SRR10045021_1.fastq.gz -2 /home/ubuntu/workspace/rnaseq/team_exercise/data/trimmed/SRR10045021_2.fastq.gz -S $HISAT/SRR10045021.sam
 
 ```
