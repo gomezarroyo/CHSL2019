@@ -1,0 +1,32 @@
+# COUNTING AND DIFFERENTIAL GENE EXPRESSION
+
+This uses data from HBR and UHR exercise from rnabio.org
+
+NOTES
+Choose a tool for counting. In this case we will use Stringtie because it can help you count isoforms as well (as opposed to Deseq or HTseq). 
+
+1) StringTie will help you count but taking into account isoforms instead of just globally adding all transcript levels together. 
+2)Some Basic stringie stuff. 
+  - Merge all gene structures from all samples 
+    - this makes a new reference file that will include transcripts with assembled and potentially novel transcripts
+  - Then re-run against your de novo transcriptome from all samples -- this will help understand count levels of isoforms that may have not been found from sample to sample. 
+  3) Then you will get total transcript levels plus isoform transcript levels. 
+  
+
+```
+cd $RNA_HOME/
+~/workspace/rnaseq
+
+mkdir -p expression/stringtie/ref_only/
+
+stringtie -p 8 -G $RNA_REF_GTF -e -B -o HBR_Rep1/transcripts.gtf -A HBR_Rep1/gene_abundances.tsv $RNA_ALIGN_DIR/HBR_Rep1.bam
+
+# -G use the reference GTF. if you don't use it then it will go ALL de novo
+# -e explore only known isoforms. if you remove it it will try to find new from within the GTF
+# -B ouput for BallGown
+# -o output Path
+
+```
+
+
+
