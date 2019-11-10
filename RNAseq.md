@@ -16,9 +16,9 @@ Notes:
   - if < 50 bp reads then OK to use BWA and a genome with a **junction database**
   - if >50 bp reads you will need spliced aligner such as bowtie/tophat, STAR, HISAT, etc. 
 
-# Set up environment
+# Set up your environment
 
-```diff
+```diff```
 mkdir /$$$path/rnaseq
 
 export RNA_HOME=~/$$$path/rnaseq
