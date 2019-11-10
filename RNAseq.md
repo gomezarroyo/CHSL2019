@@ -16,9 +16,9 @@ Notes:
   - if < 50 bp reads then OK to use BWA and a genome with a **junction database**
   - if >50 bp reads you will need spliced aligner such as bowtie/tophat, STAR, HISAT, etc. 
 
-## Set up environment
+# Set up environment
 
-```
+```diff
 mkdir /$$$path/rnaseq
 
 export RNA_HOME=~/$$$path/rnaseq
@@ -27,7 +27,7 @@ export RNA_HOME=~/$$$path/rnaseq
 echo $RNA_HOME
 ```
 
-# Add other environmental variables needed (OPTIONAL but very useful). 
+## Add other environmental variables needed (OPTIONAL but very useful). 
 This includes the software you need. ***Its probably useful to make sure your tools are in the environment
 
 ```
@@ -41,13 +41,14 @@ export RNA_REF_GTF=$RNA_REF_INDEX.gtf
 
 export RNA_ALIGN_DIR=$RNA_HOME/alignments/hisat2
 ```
-# Start up JAVA for the FASTQC software
+
+## Start up JAVA for the FASTQC software
 
 ```
 export _JAVA_OPTIONS=-Djavax.accessibility.assistive_technologies=
 
 ```
-# ACCESS YOUR PATH
+# ACCESS YOUR PATH ~/.bashrc
 ## ON MODIFYING YOUR PATH
 You can add different software to your PATH
 
@@ -58,9 +59,19 @@ nano ~/.bashrc
 
 vi ~/.bashrc
 
+#vi is a different tool
+
+#to check if your bashrc file was edited you can look using 
+
+env | grep "WHATEVER_WORD_YOU_WANT" ~/.bashrc
+
+#this will access your environment first then pipe to use grep 
+
 ```
-## ACCESS YOUR BASHRC FILE
-Once in nano you can edit your **bashrc** file
+
+# ADDING TOOLS TO YOUR PATH
+
+For easy make sure you install all your tools and add them to your path so that they are available at all times. 
 
 ```
 export LD_LIBRARY_PATH=$HOME/bin/htslib-1.9:$LD_LIBRARY_PATH
@@ -95,8 +106,8 @@ export PATH=/home/ubuntu/bin/CellRanger/cellranger-3.1.0:$PATH
 export PATH=/home/ubuntu/bin/STAR-2.7.3a/bin/Linux_x86_64_static:$PATH
 ```
 
-# Add the new PATHS for your WORKING directories
-These can change between experiments. **ALL THESE NEED TO BE CREATED STILL**
+# Add WORKING directories to your PATH (OPTIONAL but useful)
+These can change between experiments. **ALL THESE ARE shortcuts BUT THE directories NEED TO BE CREATED STILL**
 
 ```
 export RNA_HOME=~/workspace/rnaseq
@@ -119,15 +130,9 @@ export RNA_ALIGN_DIR=$RNA_HOME/alignments/hisat2
 
 export _JAVA_OPTIONS=-Djavax.accessibility.assistive_technologies=
 
-#to check if your bashrc file was edited you can look using 
-
-env | grep "WHATEVER_WORD_YOU_WANT" ~/.bashrc
-
-#this will access your environment first then pipe to use grep 
-
 ```
 
-# FIXING your PATH
+# FIXING your PATH (in case you botched it)
 NOTE: If you are worried your .bashrc is messed up you can redownload as follows:
 
 ```
@@ -190,11 +195,11 @@ export LD_LIBRARY_PATH=$RNA_HOME/student_tools/flexbar-3.4.0-linux:$LD_LIBRARY_P
 
 ```
 
-# DOCKER TOOLS: NEED TO REVIEW HOW TO INSTALL
+# DOCKER TOOLS ***NEED TO REVIEW HOW TO INSTALL***
 
 Running docker tool example
 
-```
+```diff
 docker pull biocontainers/samtools:v1.9-4-deb_cv1
 docker run -t biocontainers/samtools:v1.9-4-deb_cv1 samtools --help
 ```
