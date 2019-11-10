@@ -391,13 +391,21 @@ hisat2-build -p 8 --ss ~/workspace/rnaseq/team_exercise/references/splicesites.t
 ```
 mkdir ~/workspace/rnaseq/team_exercise/alignments/hisat2
 
+make your path directories
+
 export HISAT=~/workspace/rnaseq/team_exercise/alignments/hisat2
+export REFS=/home/ubuntu/workspace/rnaseq/team_exercise/references
 
 hisat2 -p 8 --rg-id=KO_S1 --rg SM:KO --rg LB:lib1 --rg PL:ILLUMINA --rg PU:CXX1234-ACTGAC.1 -x /home/ubuntu/workspace/rnaseq/team_exercise/references/chr11 --dta --rna-strandness RF -1 /home/ubuntu/workspace/rnaseq/team_exercise/data/trimmed/SRR10045016_1.fastq.gz -2 /home/ubuntu/workspace/rnaseq/team_exercise/data/trimmed/SRR10045016_2.fastq.gz -S $HISAT/SRR10045016.sam
+
 hisat2 -p 8 --rg-id=KO_S2 --rg SM:KO --rg LB:lib1 --rg PL:ILLUMINA --rg PU:CXX1234-ACTGAC.1 -x /home/ubuntu/workspace/rnaseq/team_exercise/references/chr11 --dta --rna-strandness RF -1 /home/ubuntu/workspace/rnaseq/team_exercise/data/trimmed/SRR10045017_1.fastq.gz -2 /home/ubuntu/workspace/rnaseq/team_exercise/data/trimmed/SRR10045017_2.fastq.gz -S $HISAT/SRR10045017.sam
+
 hisat2 -p 8 --rg-id=KO_S3 --rg SM:KO --rg LB:lib1 --rg PL:ILLUMINA --rg PU:CXX1234-ACTGAC.1 -x /home/ubuntu/workspace/rnaseq/team_exercise/references/chr11 --dta --rna-strandness RF -1 /home/ubuntu/workspace/rnaseq/team_exercise/data/trimmed/SRR10045018_1.fastq.gz -2 /home/ubuntu/workspace/rnaseq/team_exercise/data/trimmed/SRR10045018_2.fastq.gz -S $HISAT/SRR10045018.sam
+
 hisat2 -p 8 --rg-id=RQ_S1 --rg SM:RQ --rg LB:lib1 --rg PL:ILLUMINA --rg PU:CXX1234-ACTGAC.1 -x /home/ubuntu/workspace/rnaseq/team_exercise/references/chr11 --dta --rna-strandness RF -1 /home/ubuntu/workspace/rnaseq/team_exercise/data/trimmed/SRR10045019_1.fastq.gz -2 /home/ubuntu/workspace/rnaseq/team_exercise/data/trimmed/SRR10045019_2.fastq.gz -S $HISAT/SRR10045019.sam
+
 hisat2 -p 8 --rg-id=RQ_S2 --rg SM:RQ --rg LB:lib1 --rg PL:ILLUMINA --rg PU:CXX1234-ACTGAC.1 -x /home/ubuntu/workspace/rnaseq/team_exercise/references/chr11 --dta --rna-strandness RF -1 /home/ubuntu/workspace/rnaseq/team_exercise/data/trimmed/SRR10045020_1.fastq.gz -2 /home/ubuntu/workspace/rnaseq/team_exercise/data/trimmed/SRR10045020_2.fastq.gz -S $HISAT/SRR10045020.sam
+
 hisat2 -p 8 --rg-id=RQ_S3 --rg SM:RQ --rg LB:lib1 --rg PL:ILLUMINA --rg PU:CXX1234-ACTGAC.1 -x /home/ubuntu/workspace/rnaseq/team_exercise/references/chr11 --dta --rna-strandness RF -1 /home/ubuntu/workspace/rnaseq/team_exercise/data/trimmed/SRR10045021_1.fastq.gz -2 /home/ubuntu/workspace/rnaseq/team_exercise/data/trimmed/SRR10045021_2.fastq.gz -S $HISAT/SRR10045021.sam
 
 ```
@@ -410,5 +418,65 @@ samtools sort -@ 8 -o SRR10045018.bam SRR10045018.sam
 samtools sort -@ 8 -o SRR10045019.bam SRR10045019.sam
 samtools sort -@ 8 -o SRR10045020.bam SRR10045020.sam
 samtools sort -@ 8 -o SRR10045021.bam SRR10045021.sam
+```
+
+#Merge HISAT2 BAM files
+use picard tools
+
+```
+cd $HISAT
+/home/ubuntu/workspace/rnaseq/team_exercise/alignments/hisat2
+
+java -Xmx2g -jar $RNA_HOME/student_tools/picard.jar MergeSamFiles OUTPUT=KO.bam INPUT=SRR10045016.bam INPUT=SRR10045017.bam INPUT=SRR10045018.bam
+
+java -Xmx2g -jar $RNA_HOME/student_tools/picard.jar MergeSamFiles OUTPUT=RQ.bam INPUT=SRR10045019.bam INPUT=SRR10045020.bam INPUT=SRR10045021.bam
+
+#Here I kept $RNA_HOME cos it has all the student tools we installed earlier
+
+```
+Figure out how much they aligned
+
+```
+$RNA_HOME/student_tools/samtools-1.9/samtools flagstat FILENAME.bam
+
+#Here I kept $RNA_HOME cos it has all the student tools we installed earlier
+
+You could have done it as a loop too
+
+find *.bam -exec echo samtools flagstat {} \; | sh
+
+```
+***INDEX YOUR BAM FILES***
+
+```
+
+cd $HISAT
+~/workspace/rnaseq/team_exercise/alignments/hisat2
+
+samtools index RQ.bam
+
+or loop it
+
+find *.bam -exec echo samtools index {} \; | sh
+
+```
+you can also try a docker tool!!!
+
+```
+docker run -v /workspace/rnaseq/team_exercise/alignments/hisat2:/workspace biocontainers/samtools:v1.9-4-deb_cv1 samtools index /workspace/KO.bam
+
+1) set your workspace equivalent (/workspace/rnaseq/team_exercise/alignments/hisat2) 
+2) find your docker hub in this case its from biocontainers , thus biocontainers/samtools 
+3) SOMETIMES you need find your tag in this case samtools needs one and it was (:v1.9-4-deb_cv1) which is the version the tools in the docker container
+4) type your tool name and the command (samtools index) and your sample name (KO.bam)
+
+```
+Visualize in IGV
+
+Load your IP address on browser
+Then find your BAM file and copy link address
+Go to IGV >> file >> load from URL
+
+
 
 
