@@ -188,11 +188,9 @@ head gene_read_counts_table_all_final.tsv | column -t
 -awk -v OFS="\t" '$1=$1' is using awk to replace the single space characters that were in the concatenated version of our header.txt and gene_read_counts_table_all.tsv with a tab character. -v is used to reset the variable OFS, which stands for Output Field Separator. By default, this is a single space. By specifying OFS="\t", we are telling awk to replace the single space with a tab. The '$1=$1' tells awk to reevaluate the input using the new output variable.
 ```
 
-# Expression analysis TEST
+## Expression analysis TEST
 
 ERCC expression analysis
 Based on the above read counts, plot the linearity of the ERCC spike-in read counts versus the known concentration of the ERCC spike-in Mix. In this step we will first download a file describing the expected concentrations and fold-change differences for the ERCC spike-in reagent. Next we will use a Perl script to organize the ERCC expected values and our observed counts for each ERCC sequence. Finally, we will use an R script to produce an x-y scatter plot that compares the expected and observed values.
-
-```
 
 
