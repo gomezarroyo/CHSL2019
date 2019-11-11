@@ -113,7 +113,7 @@ removed
 ```
 cell.cycle.tirosh <- read.table("CellCycleTirosh.txt", sep='\t', header=FALSE);
 s.genes = cell.cycle.tirosh$V2[which(cell.cycle.tirosh$V1 == "G1/S")];
-g2m.genes = cell.cycle.tirosh$V2[which(cell.cycle.tirosh$V1 == "G2/M")];
+g2m.genes = cell.cycle.tirosh$V2[which(cell.cycle.tirosh$V1 == "G2/M")]
 
 scrna <- CellCycleScoring(object=scrna, s.features=s.genes, g2m.features=g2m.gen
 es, set.ident=FALSE)
