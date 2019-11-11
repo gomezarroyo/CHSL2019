@@ -1,18 +1,25 @@
-# On using cellRanger
+# Single cell sequencing
 
-# Tools (you could find in www.scrna-tools.org >> repository
+# Introduction
+## Useful things to study before you start:
+- Concepts of negative binomial distribution
+- Concepts of data dimensionality reduction (PCA, tSNE vs UMAP)
+
+## Tools (you could find in www.scrna-tools.org >> repository
 
 1) cell ranger vs kallisto bustools vs star solo
 2) loop browser (this will not help with cell death removal)
 3) seurat vs monocle vs LIGER
 4) RNAvelocity
 
+## Some tips
+
 cellRanger count will align and count. 
   it will use a reference genome and transcript annotations file
   software will index everything. 
   software will start associating the UMIs to read counts
   
-   multi-core node with 12-16 CPU cores and 128GB memory if you use cell ranger
+you may need multi-core node with 12-16 CPU cores and 128GB memory if you use cell ranger
    
    .9% per 1000 cells will likely be doublets when sequencing. 
    
@@ -20,14 +27,11 @@ cellRanger count will align and count.
     this should give you enough data to work with but better coverage
     mean reads per cell should aim towards 50,000s per cell but you need to balance coverage vs money spent (you can resequence multiple times)
    
-   analysis from html file
-   what is the sequencing saturation?  
+  always look at the fraction of reads per cell
    
-   always look at the fraction of reads per cell
-   
-# Analysis Pipeline (once you get your counts table)
+ # Analysis Pipeline (once you get your counts table)
  
- code words
+ **Useful code words**
  
  features = genes
  counts = UMIS
@@ -35,7 +39,14 @@ cellRanger count will align and count.
  
 # Seurat Workflow
 
-1) load your data
+FIRST PART OF PIPELINE
+
+1. Create Seurat object
+2. QC by filtering out cells
+3. SCT normalize each dataset
+4. Integrate datasets
+
+## Load your data
 
 ```
 scrna.counts <- Read10X(data.dir = "###/yourpath/outs/filtered_feature_bc_matrix")
@@ -45,19 +56,24 @@ scrna <- CreateSeuratObject(counts = scrna.counts, min.cells = 10, min.features
 
 #also figure out if you need to do batch effect removal
 # you can multiplex data loading -- see presenter slides
+```
 
+## Create your seurat object, this will store your data to work with
+```
+scrna <- CreateSeuratObject(counts = scrna.counts)
 
-#analyse ribosomal and mitochondrial genes
+```
+## Analyse ribosomal and mitochondrial genes
 
-# Calculate percentage of mitochondrial genes
-
+### Fisrt calculate percentage of mitochondrial genes
+```
 mito.genes <- grep(pattern = "^MT-", x = rownames(x = scrna), value = TRUE);
 percent.mito <- Matrix::colSums(x = GetAssayData(object = scrna, slot = 'counts')[mito.genes, ]) /
 Matrix::colSums(x = GetAssayData(object = scrna, slot = 'counts'));
 scrna[['percent.mito']] <- percent.mito; # assign it to the meta data
-
-# ribosomal genes
-
+```
+### Then calculate percentage ribosomal genes
+```
 ribo.genes <- grep(pattern = "^RP[SL][[:digit:]]", x = rownames(x = scrna), value = TRUE);
 percent.ribo <- Matrix::colSums(x = GetAssayData(object = scrna, slot = 'counts')[ribo.genes, ]) /
 Matrix::colSums(x = GetAssayData(object = scrna, slot = 'counts'));
@@ -70,7 +86,7 @@ vln <- VlnPlot(object = scrna, features = "nCount_RNA", pt.size=0, group.by="Bat
 vln <- VlnPlot(object = scrna, features = "nFeature_RNA", pt.size=0, group.by="Batch")
 
 ```
-## Filter your Data
+## Filter your Data!
 • Purpose: Remove cells with high mitochondrial content, too many genes, too few genes, etc
 • Use the plots on the previous slides to choose appropriate thresholds for your data
 • Some example thresholds:
@@ -85,21 +101,59 @@ scrna <- subset(x = scrna, subset = nFeature_RNA > 200 & nFeature_RNA < Feature9
 mc.hi)
 
 ```
-
-2) create your seurat object, this will store your data to work with
-scrna <- CreateSeuratObject(counts = scrna.counts)
+## Calculate cell cycle phase of each cell
+Purpose: Cell cycle signature can dominate tSNE/UMAP plots and may need to be
+removed
+• Seurat has a built-in function that calculates relative expression level of G1/S and G2/M genes defined in Tirosh et al 2016
 
 ```
+cell.cycle.tirosh <- read.table("CellCycleTirosh.txt", sep='\t', header=FALSE);
+s.genes = cell.cycle.tirosh$V2[which(cell.cycle.tirosh$V1 == "G1/S")];
+g2m.genes = cell.cycle.tirosh$V2[which(cell.cycle.tirosh$V1 == "G2/M")];
 
-3) Find variable genes, scale, and normalize
+scrna <- CellCycleScoring(object=scrna, s.features=s.genes, g2m.features=g2m.gen
+es, set.ident=FALSE)
+```
+
+## Normalize your data: Find variable genes, scale, and normalize: Goal is to remove technical effects while preserving biological variation
+
+### Old version
+
 ```
 scrna <- SCTransform(scrna) 
 
+#Older versions of Seurat will use: 
+
 scrna <- NormalizeData(object = scrna) 
 scrna <- FindVariableFeatures(object = scrna) 
+#FindVariableFeatures: use a variance stabilizing transformation
+
 scrna <- ScaleData(object = scrna) 
+#ScaleData: subtract mean, divide by standard deviation, remove unwanted signal
+using multiple regression
+
 ```
-4) Dimensionality reduction -- Principal Component Analysis
+### NEW version for NORMALIZATION: SCTransform function 
+However! Now Seurat uses a different method for normalization called SCTransform function
+Use negative binomial regression (with parameters derived from groups of genes
+with similar expression) to remove impact of sequencing depth. 
+```
+# SCTransform (with removal of cell cycle signal):
+
+scrna <- SCTransform(scrna, vars.to.regress = c("S.Score", "G2M.Score"), verbose=FALSE)
+# Note that this replaces the three separate steps implemented in older workflows:
+
+scrna <- NormalizeData(object = scrna, normalization.method = "LogNormalize", scale.factor = 1e4) # fea
+ture counts divided by total, multiplied by scale factor, add 1, ln-transformed
+
+scrna <- FindVariableFeatures(object = scrna, selection.method = 'vst', mean.cutoff = c(0.1,8), dispers
+ion.cutoff = c(1, Inf)) # designed to find ~2000 variable genes
+
+scrna <- ScaleData(object = scrna, features = rownames(x = scrna), vars.to.regress = c("S.Score","G2M.S
+core"), display.progress=FALSE) # center and regress out unwanted variation
+
+```
+## Dimensionality reduction -- Principal Component Analysis
 ```
 scrna <- RunPCA(object = scrna) 
 scrna <- FindNeighbors(object = scrna)
