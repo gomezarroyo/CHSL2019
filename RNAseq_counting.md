@@ -193,4 +193,104 @@ head gene_read_counts_table_all_final.tsv | column -t
 ERCC expression analysis
 Based on the above read counts, plot the linearity of the ERCC spike-in read counts versus the known concentration of the ERCC spike-in Mix. In this step we will first download a file describing the expected concentrations and fold-change differences for the ERCC spike-in reagent. Next we will use a Perl script to organize the ERCC expected values and our observed counts for each ERCC sequence. Finally, we will use an R script to produce an x-y scatter plot that compares the expected and observed values.
 
+# TEAM EXERCISE
+
+```
+
+mkdir -p expression/stringtie/ref_only/
+/home/ubuntu/workspace/rnaseq/team_exercise/expression/stringtie/ref_only
+
+#THIS MUST HAPPEN IN THE ABOVE DIRECTORY
+
+stringtie -p 8 -G $REFS/chr11_Homo_sapiens.GRCh38.95.gtf -e -B -o SRR10045016/transcripts.gtf -A SRR10045016/gene_abundances.tsv /home/ubuntu/workspace/rnaseq/team_exercise/alignments/hisat2/SRR10045016.bam
+stringtie -p 8 -G $REFS/chr11_Homo_sapiens.GRCh38.95.gtf -e -B -o SRR10045017/transcripts.gtf -A SRR10045017/gene_abundances.tsv /home/ubuntu/workspace/rnaseq/team_exercise/alignments/hisat2/SRR10045017.bam
+stringtie -p 8 -G $REFS/chr11_Homo_sapiens.GRCh38.95.gtf -e -B -o SRR10045018/transcripts.gtf -A SRR10045018/gene_abundances.tsv /home/ubuntu/workspace/rnaseq/team_exercise/alignments/hisat2/SRR10045018.bam
+stringtie -p 8 -G $REFS/chr11_Homo_sapiens.GRCh38.95.gtf -e -B -o SRR10045019/transcripts.gtf -A SRR10045019/gene_abundances.tsv /home/ubuntu/workspace/rnaseq/team_exercise/alignments/hisat2/SRR10045019.bam
+stringtie -p 8 -G $REFS/chr11_Homo_sapiens.GRCh38.95.gtf -e -B -o SRR10045020/transcripts.gtf -A SRR10045020/gene_abundances.tsv /home/ubuntu/workspace/rnaseq/team_exercise/alignments/hisat2/SRR10045020.bam
+stringtie -p 8 -G $REFS/chr11_Homo_sapiens.GRCh38.95.gtf -e -B -o SRR10045021/transcripts.gtf -A SRR10045021/gene_abundances.tsv /home/ubuntu/workspace/rnaseq/team_exercise/alignments/hisat2/SRR10045021.bam
+
+cd ~/workspace/rnaseq/team_exercise/expression/stringtie/ref_only
+
+wget https://raw.githubusercontent.com/griffithlab/rnabio.org/master/assets/scripts/stringtie_expression_matrix.pl
+chmod +x stringtie_expression_matrix.pl
+
+#this part is only for this exercise
+
+SRR10045016,SRR10045017,SRR10045018,SRR10045019,SRR10045020,SRR10045021
+
+./stringtie_expression_matrix.pl --expression_metric=TPM --result_dirs='SRR10045016,SRR10045017,SRR10045018,SRR10045019,SRR10045020,SRR10045021' --transcript_matrix_file=transcript_tpm_all_samples.tsv --gene_matrix_file=gene_tpm_all_samples.tsv
+./stringtie_expression_matrix.pl --expression_metric=FPKM --result_dirs='SRR10045016,SRR10045017,SRR10045018,SRR10045019,SRR10045020,SRR10045021' --transcript_matrix_file=transcript_fpkm_all_samples.tsv --gene_matrix_file=gene_fpkm_all_samples.tsv
+./stringtie_expression_matrix.pl --expression_metric=Coverage --result_dirs='SRR10045016,SRR10045017,SRR10045018,SRR10045019,SRR10045020,SRR10045021' --transcript_matrix_file=transcript_coverage_all_samples.tsv --gene_matrix_file=gene_coverage_all_samples.tsv
+
+```
+
+Q1. Based on your stringtie results, what are the top 5 genes with highest average expression levels across all knockout samples? What about in your rescue samples? How large is the overlap between the two sets of genes? (Hint: You can use R for this analysis)
+
+```
+mkdir /home/ubuntu/workspace/rnaseq/team_exercise/de/ballgown/ref_only
+cd /home/ubuntu/workspace/rnaseq/team_exercise/de/ballgown/ref_only 
+
+#this will also be your working directory
+
+###YOU MUST BE IN BALLGOWN DIR###
+
+printf "\"ids\",\"type\",\"path\"\n\"SRR10045016\",\"KO\",\"~/workspace/rnaseq/team_exercise/expression/stringtie/ref_only/SRR10045016\"\n\"SRR10045017\",\"KO\",\"~/workspace/rnaseq/team_exercise/expression/stringtie/ref_only/SRR10045017\"\n\"SRR10045018\",\"KO\",\"~/workspace/rnaseq/team_exercise/expression/stringtie/ref_only/SRR10045018\"\n\"SRR10045019\",\"RQ\",\"~/workspace/rnaseq/team_exercise/expression/stringtie/ref_only/SRR10045019\"\n\"SRR10045020\",\"RQ\",\"~/workspace/rnaseq/team_exercise/expression/stringtie/ref_only/SRR10045020\"\n\"SRR10045021\",\"RQ\",\"~/workspace/rnaseq/team_exercise/expression/stringtie/ref_only/SRR10045021\"\n" > KO_vs_RQ.csv
+
+cat KO_vs_RQ.csv
+
+#this last file is necessary for Ballgown to work
+
+R
+
+bg
+ballgown instance with 12774 transcripts and 6 samples
+
+
+# Load all attributes including gene name
+bg_table = texpr(bg, 'all')
+bg_gene_names = unique(bg_table[, 9:10])
+
+# Save the ballgown object to a file for later use
+save(bg, file='bg.rda')
+
+# Perform differential expression (DE) analysis with no filtering
+results_transcripts = stattest(bg, feature="transcript", covariate="type", getFC=TRUE, meas="FPKM")
+results_genes = stattest(bg, feature="gene", covariate="type", getFC=TRUE, meas="FPKM")
+results_genes = merge(results_genes, bg_gene_names, by.x=c("id"), by.y=c("gene_id"))
+
+              id feature        fc       pval      qval gene_name
+1 ENSG00000002330    gene 0.7047020 0.03624227 0.3858446       BAD
+2 ENSG00000005801    gene 1.9619699 0.18471402 0.6270660    ZNF195
+3 ENSG00000006071    gene 0.9768149 0.40473517 0.8197058     ABCC8
+4 ENSG00000006118    gene 0.8657977 0.76053495 0.9320573  TMEM132A
+5 ENSG00000006534    gene 1.0367493 0.87831075 0.9827270   ALDH3B1
+6 ENSG00000006611    gene 0.6284114 0.01009314 0.2899279     USH1C
+
+size of results genes without filtering: 3285
+size of results genes with filtering: 960 (after removing files with  low-abundance genes)
+
+#this will export table to the folder in the instance
+write.table(results_transcripts, "KO_vs_RQ_transcript_results_filtered.tsv", sep="\t", quote=FALSE, row.names = FALSE)
+write.table(results_genes, "KO_vs_RQ_gene_results_filtered.tsv", sep="\t", quote=FALSE, row.names = FALSE)
+
+Q:3 
+514 transcripts that are significantly different
+146 genes that are significantly different
+
+write.table(sig_transcripts, "KO_vs_RQ_transcript_results_sig.tsv", sep="\t", quote=FALSE, row.names = FALSE)
+write.table(sig_genes, "KO_vs_RQ_gene_results_sig.tsv", sep="\t", quote=FALSE, row.names = FALSE)
+
+Q4. By referring back to the supplementary tutorial in the DE Visualization Module, can you construct a heatmap showcasing the significantly de genes?
+
+ pdf(file="Team_Exercise_Chr11_KO_vs_RQ_Figures.pdf")
+ 
+ 178 differentially expressed genes (after sorting by pvalue <0.05 first 
+ 
+ 
+ heatmap.2(y, hclustfun=myclust, distfun=mydist, na.rm = TRUE, scale="none", dendrogram="both", margins=c(10,4), Rowv=TRUE, Colv=TRUE, symbreaks=FALSE, key=TRUE, symkey=FALSE, density.info="none", trace="none", main=main_title, cexRow=0.3, cexCol=1, labRow=sig_gene_names_de,col=rev(heat.colors(75)))
+ 
+ 
+ ```
+
+
 
