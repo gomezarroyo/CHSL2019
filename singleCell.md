@@ -79,7 +79,10 @@ ribo.genes <- grep(pattern = "^RP[SL][[:digit:]]", x = rownames(x = scrna), valu
 percent.ribo <- Matrix::colSums(x = GetAssayData(object = scrna, slot = 'counts')[ribo.genes, ]) /
 Matrix::colSums(x = GetAssayData(object = scrna, slot = 'counts'));
 scrna[['percent.ribo']] <- percent.ribo; # assign it to the meta data
+```
+Plot your results
 
+```
 vln <- VlnPlot(object = scrna, features = c("percent.mito", "percent.ribo"), pt.size=0, ncol = 2,
 group.by="Batch"); # make a violin plot, and color by batch or sample
 
