@@ -1,0 +1,96 @@
+# Download data from genome browser
+you can download BED format from UCSC
+
+TABLE browser! 
+
+# BED files format (you can Google!)
+1) chrom
+2) chromStart
+3) chromEnd
+
+4 - 12 are optional options
+7 - 12 define where does it draw a thickStart or thickEND and how many blocks are there. 
+
+
+#GFF format will be different. 
+
+1)start coordinate CHANGES! (zero vs 1 based)
+2)columns are different order
+3)shows CDS instead of just number where the exons end and start
+
+#THINGs to remember. 
+BED 0 BASED, half open
+GFF 1-BASED
+SAM 1-BASED
+BAM 0-BASED
+VCF 1-BASED
+
+
+##SORT it
+
+```
+head refseq.hg38.bed sort k1,1 -k2n,2
+
+head refseq.hg38.bed sort k1,1 -k2n,2 | cut -f 1-3 
+#this last part isolates column 1-3
+
+#final command to export a file
+sort -k1,1 -k2,2n refseq.hg38.bed > refseq.hg38.sorted.bed
+
+```
+##bgzip the sorted file (compression)
+
+````
+bgzip refseq.hg38.bed
+```
+
+##Tabix the bgzip file
+
+```
+tabix bgzip refseq.hg38.bed
+
+```
+
+# USING AWK in UNIX. AWK is the thing we use to manipulate file. 
+http://lh3lh3.users.sourceforge.net/biounix.shtml
+
+```
+file name is cpg.bed
+
+#example: awk '$1 == "chr1"' cpg.bed
+only returns parts of this file where column 1 equals chr1
+note that you need to 'put things between '' to tell what to do. even if it is 'something like "this"' where its " and then '
+dollar sign ($) means column
+
+#find a specific line
+
+awk 'NR == 987' cpg.bed
+
+awk 'NR >= 100 && 150' cpg.bed 
+awk 'NR >= 100 && 150' cpg.bed | head
+
+awk '(NR>=100 && NR <= 200) || ($1 == "chr22")' cpg.bed
+#the double pipe means OR
+#and will be &&
+
+```
+A bix complex programming. 
+
+sort -k5,5rn #r is reverse and n is numerical 
+
+awk '{print $0, $3-$2}' cpg.bed | sort -k5,5rn
+{to print something}
+
+```
+
+
+
+
+```
+
+
+
+
+
+
+
