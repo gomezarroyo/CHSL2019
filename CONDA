@@ -1,0 +1,27 @@
+ 
+ # CONDA
+ is a file manager
+ 
+ ```conda config --get channels
+ conda config --add channels default
+ conda config --add channels bioconda
+ conda config --add channels conda-forge
+ conda install ggd
+ 
+ 
+ #more formatting
+ 
+ file name is ucscGenePfam.txt.gz 
+ zcat ucscGenePfam.txt.gz | cut -f 2- > ucscGenePfam.bed
+ 
+bedtools intersect -a Homo_sapiens.GRCh38.98.gtf.gz -b ucscGenePfam.bed -wa
+ 
+ #USING GGD
+ conda install ggd
+ #install it
+ 
+ ggd search grch37 gtf pfam
+  #this will find grch37 and pfam databases. the result will give you an output that reads how to install it
+  
+ggd show-env
+ 
