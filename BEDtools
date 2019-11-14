@@ -1,3 +1,47 @@
+#Installing BEDtools
+
+```
+wget https://github.com/arq5x/bedtools2/releases/download/v2.28.0/bedtools-2.28.0.tar.gz
+$ tar -zxvf bedtools-2.28.0.tar.gz
+$ cd bedtools2
+$ make
+
+#add it to the PATH!
+export PATH=/Users/seqtec/Desktop/tools/bedtools2:$PATH
+
+#using bedtools
+
+bedtools intersect -a -b 
+#this will make a combined BED file
+
+#you can change settings for combinations
+bedtools intersect -a cpg.bed -b exons.bed -wa -wb \
+| head -5
+
+#this will merge but include info from both files
+
+#How many base pairs of overlap were there?
+
+bedtools intersect -a cpg.bed -b exons.bed -wo \
+| head -10
+
+#Counting the number of overlapping features.
+bedtools intersect -a cpg.bed -b exons.bed -c \
+| head
+#Find features that DO NOT overlap
+bedtools intersect -a cpg.bed -b exons.bed -v \
+| head
+
+#Require a minimal fraction of overlap.
+bedtools intersect -a cpg.bed -b exons.bed \
+-wo -f 0.50 \
+| head
+
+#Faster analysis via sorted data.
+
+
+```
+
 # Download data from genome browser
 you can download BED format from UCSC
 
@@ -83,12 +127,80 @@ awk '{print $0, $3-$2}' cpg.bed | sort -k5,5rn
 
 ```
 
+# getting a random sample
 
+shuf 
+sort -R exons.merge.sorged.bed
 
+bedtools merge -i exons.bed -5 #will merge intersects by 5 bp
+
+#make a complement! (for instance intergenic regions)
+
+bedtools complement -i exons.bed -g genome.txt 
+
+# -i for intergentic
+
+#bedtools “genomecov”
+
+bedtools genomecov -i exons.bed -g genome.txt
+
+output
+genome  0   3062406951  3137161264  0.976171
+genome  1   44120515    3137161264  0.0140638
+genome  2   15076446    3137161264  0.00480576
+genome  3   7294047 3137161264  0.00232505
+genome  4   3650324 3137161264  0.00116358
+genome  5   1926397 3137161264  0.000614057
+genome  6   1182623 3137161264  0.000376972
+genome  7   574102  3137161264  0.000183
+genome  8   353352  3137161264  0.000112634
+genome  9   152653  3137161264  4.86596e-05
+genome  10  113362  3137161264  3.61352e-05
+genome  11  57361   3137161264  1.82844e-05
+genome  12  52000   3137161264  1.65755e-05
+genome  13  55368   3137161264  1.76491e-05
+genome  14  19218   3137161264  6.12592e-06
+genome  15  19369   3137161264  6.17405e-06
+genome  16  26651   3137161264  8.49526e-06
+genome  17  9942    3137161264  3.16911e-06
+genome  18  13442   3137161264  4.28477e-06
+genome  19  1030    3137161264  3.28322e-07
+genome  20  6329    3137161264  2.01743e-06
 
 ```
 
+#Producing BEDGRAPH output
+this will spit out  “depth” fo feature coverage for each base pair in the genome:
 
+```
+bedtools genomecov -i exons.bed -g genome.txt -bg | head -20
+
+```
+#Exercise BEDTOOLS tutorial
+
+1. make intergenic regions
+bedtools complement -i exons.bed -g genome.txt > intergenic.bed
+
+2. what is the average distance from GWAS SNPs to the closest exon
+
+bedtools closest -d -a gwas.bed -b exons.bed | awk '{sum+=$11} END {print "Average = ",sum/NR}'
+
+3. Count how many exons occur in each 500kb interval (“window”) in the human genome. 
+(Hint - have a look at the makewindows tool.)
+
+bedtools makewindows -b exons.bed -w 500000 | wc -l
+bedtools makewindows -g genome.txt -w 500000 > genome.500.bed
+bedtools intersect -a genome.500.bed -b exons.bed -c | head
+
+4. Are there any exons completely overlapped by an enhancer?
+
+bedtools intersect -a exons.bed -b hesc.chromHmm.bed -wa -wb -f 1.0 > enhancer.exon.overlap.bed
+grep "Enhancer" enhancer.exon.overlap.bed > enhancer.bed
+wc -l enhancer.bed
+
+5. 
+
+```
 
 
 
