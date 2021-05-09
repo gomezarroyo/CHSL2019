@@ -89,6 +89,9 @@ then restart apache
 sudo service apache2 restart
 ```
 
+you can now go to your webbrowser www.IPaddressCopiedFromAWS.com and you should be able download files. this is useful when you wanna download the files you processed if you wanna use your files in R studio in your computer instead of using R in your EC2
+
+
 
 
 
