@@ -92,6 +92,49 @@ sudo service apache2 restart
 you can now go to your webbrowser www.IPaddressCopiedFromAWS.com and you should be able download files. this is useful when you wanna download the files you processed if you wanna use your files in R studio in your computer instead of using R in your EC2
 
 
+## Basic introduction to the EC2 instance
+
+```
+#How are storage volumes mounted?
+lsblk
+
+#How much storage space is being used for various mount points?
+df -h
+
+#Detailed description of hardware
+lshw
+
+#See active resource usage right now with "top".  Use "1" to see all CPUs individually.  Use "q" to exit
+top
+```
+
+## SET UP ENVIROMENTAL VARIABLES
+
+Environmental variables 
+
+## TO DOWNLOAD FROM GOOGLE DRIVE
+
+To download from Gdrive you need a special script. I used one python script that make thing easier called gdown (https://github.com/wkentaro/gdown)
+
+to install 
+
+```
+pip install gdown
+```
+
+then download using the FILEID from the shareable link. for example in a link:
+https://drive.google.com/file/d/1nucLF3mkIB7F7tmRfM3dpEp1Js__DgSD/view?usp=sharing
+
+the FILED is between file/d/ and /view? thus it would be 1nucLF3mkIB7F7tmRfM3dpEp1Js__DgSD
+
+then use that with the following command
+
+```
+gdown https://drive.google.com/uc?id=1nucLF3mkIB7F7tmRfM3dpEp1Js__DgSD
+#were you copy and past the FILEID after id=
+```
+
+
 
 
 
