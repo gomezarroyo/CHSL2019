@@ -81,7 +81,7 @@ sudo vim /etc/apache2/sites-available/000-default.conf
 
 this will allow you to selecdt what directory should be accessible via entering the IP address in your webbrowser
 
-find the section where it says DocumentRoot and change it to /home/ubuntu
+find the section where it says DocumentRoot and change it to ```/home/ubuntu```
 
 then restart apache
 
